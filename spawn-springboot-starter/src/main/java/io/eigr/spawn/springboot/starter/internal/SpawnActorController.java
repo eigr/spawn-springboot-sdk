@@ -32,7 +32,20 @@ public class SpawnActorController {
 
     public void register() throws Exception {
         Map<String, ActorOuterClass.Actor> actors = entities.stream().map(actor -> {
+
+            ActorOuterClass.ActorSnapshotStrategy snapshotStrategy = ActorOuterClass.ActorSnapshotStrategy.newBuilder()
+                    .setTimeout(ActorOuterClass.TimeoutStrategy.newBuilder().setTimeout(10000).build())
+                    .build();
+
+            ActorOuterClass.ActorDeactivateStrategy deactivateStrategy = ActorOuterClass.ActorDeactivateStrategy.newBuilder()
+                    .setTimeout(ActorOuterClass.TimeoutStrategy.newBuilder().setTimeout(60000).build())
+                    .build();
+
             return ActorOuterClass.Actor.newBuilder()
+                    .setName(actor.getActorName())
+                    .setPersistent(actor.isPersistent())
+                    .setSnapshotStrategy(snapshotStrategy)
+                    .setDeactivateStrategy(deactivateStrategy)
                     .build();
 
         }).collect(Collectors.toMap(ActorOuterClass.Actor::getName, Function.identity()));

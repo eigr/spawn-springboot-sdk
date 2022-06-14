@@ -10,7 +10,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.retry.annotation.EnableRetry;
+
+@EnableRetry
 @Configuration
+@PropertySource("classpath:retry.properties")
 @EnableConfigurationProperties(SpawnProperties.class)
 @ComponentScan(basePackages = "io.eigr.spawn.springboot.starter")
 public class SpawnAutoConfiguration {

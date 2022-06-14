@@ -5,7 +5,7 @@ import io.eigr.spawn.springboot.starter.Value;
 import io.eigr.spawn.springboot.starter.annotations.ActorEntity;
 import io.eigr.spawn.springboot.starter.annotations.Command;
 
-@ActorEntity(name = "joe")
+@ActorEntity(name = "joe", persistent = true)
 public class ExampleActor {
 
     @Command(name = "get")
