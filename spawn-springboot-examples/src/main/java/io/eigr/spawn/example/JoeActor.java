@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Log4j2
 @ActorEntity(name = "joe", stateType = MyState.class)
-public class ExampleActor {
+public class JoeActor {
 
     @Command(name = "get")
     public Value get(ActorContext<MyState> context) {
