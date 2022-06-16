@@ -7,7 +7,6 @@ import io.eigr.functions.protocol.Protocol;
 import io.eigr.functions.protocol.actors.ActorOuterClass;
 import io.eigr.spawn.springboot.starter.ActorContext;
 import io.eigr.spawn.springboot.starter.Value;
-import io.eigr.spawn.springboot.starter.annotations.Command;
 import io.eigr.spawn.springboot.starter.autoconfigure.SpawnProperties;
 import io.eigr.spawn.springboot.starter.exceptions.ActorInvokeException;
 import io.eigr.spawn.springboot.starter.exceptions.ActorNotFoundException;
@@ -118,8 +117,14 @@ public class SpawnActorController {
                     final Method actorMethod = entityMethod.getMethod();
                     Class inputType = entityMethod.getInputType();
 
-                    Object state = context.getState().unpack(entity.getStateType());
-                    ActorContext actorContext = new ActorContext(state);
+                    ActorContext actorContext;
+                    if (context.hasState() && Objects.nonNull(context.getState())) {
+                        Object state = context.getState().unpack(entity.getStateType());
+                        actorContext = new ActorContext(state);
+                    } else {
+                        actorContext = new ActorContext();
+                    }
+
                     if (inputType.isAssignableFrom(ActorContext.class)) {
                         return (Value) actorMethod.invoke(actorRef, actorContext);
                     } else {
@@ -127,13 +132,10 @@ public class SpawnActorController {
                         return (Value) actorMethod.invoke(actorRef, unpack, actorContext);
                     }
                 } catch (IllegalAccessException e) {
-                    System.out.println(String.format("Error: %s", e) );
                     throw new RuntimeException(e);
                 } catch (InvocationTargetException e) {
-                    System.out.println(String.format("Error: %s", e) );
                     throw new RuntimeException(e);
                 } catch (InvalidProtocolBufferException e) {
-                    System.out.println(String.format("Error: %s", e) );
                     throw new RuntimeException(e);
                 }
             }

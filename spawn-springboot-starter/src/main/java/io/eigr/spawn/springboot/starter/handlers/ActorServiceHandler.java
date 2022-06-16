@@ -42,9 +42,9 @@ public final class ActorServiceHandler {
 
         Value valueResponse = actorController.callAction(system, actor, commandName, value, context);
         //valueResponse.getType();
-        log.info("Actor {} received Action invocation for command {}. Result value: {}", actor, commandName, valueResponse);
+        log.debug("Actor {} received Action invocation for command {}. Result value: {}", actor, commandName, valueResponse);
         Any encodedState = Any.pack(valueResponse.getState());
-        Any encodedValue = Any.pack(valueResponse.getState());
+        Any encodedValue = Any.pack(valueResponse.getValue());
 
         Protocol.Context updatedContext = Protocol.Context.newBuilder()
                 .setState(encodedState)

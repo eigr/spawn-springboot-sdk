@@ -18,4 +18,11 @@ public final class ActorContext<S extends Object> {
         return state;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ActorContext{");
+        sb.append("state=").append(state);
+        sb.append('}');
+        return sb.toString();
+    }
 }

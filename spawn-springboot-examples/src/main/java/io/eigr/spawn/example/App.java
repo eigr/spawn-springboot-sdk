@@ -22,12 +22,12 @@ public class App {
         return args -> {
             SpawnSystem actorSystem = ctx.getBean(SpawnSystem.class);
             log.info("Let's invoke some Actor");
-            for (int i = 0; i < 1000; i++) {
-                Example.MyBusinessMessage arg = Example.MyBusinessMessage.newBuilder()
+            for (int i = 0; i < 4000; i++) {
+                MyBusinessMessage arg = MyBusinessMessage.newBuilder()
                         .setValue(i)
                         .build();
 
-                Example.MyBusinessMessage result = (Example.MyBusinessMessage) actorSystem.invoke("joe", "sum", arg, Example.MyBusinessMessage.class);
+                MyBusinessMessage result = (MyBusinessMessage) actorSystem.invoke("joe", "sum", arg, MyBusinessMessage.class);
                 log.info("Actor invoke sum result: {}", result.getValue());
             }
         };
