@@ -1,14 +1,20 @@
 package io.eigr.spawn.springboot.starter;
 
+import java.util.Optional;
+
 public final class ActorContext<S extends Object> {
 
-    private final S state;
+    private Optional<S> state;
 
-    public ActorContext(S state) {
-        this.state = state;
+    public ActorContext(){
+        this.state = Optional.empty();
     }
 
-    public S getState()  {
+    public ActorContext(S state) {
+        this.state = Optional.of(state);
+    }
+
+    public Optional<S> getState()  {
         return state;
     }
 

@@ -1,5 +1,6 @@
 package io.eigr.spawn.springboot.starter.autoconfigure;
 
+import io.eigr.spawn.springboot.starter.SpawnSystem;
 import io.eigr.spawn.springboot.starter.internal.ActorClassGraphEntityScan;
 import io.eigr.spawn.springboot.starter.internal.SpawnActorController;
 import io.eigr.spawn.springboot.starter.internal.SpawnClient;
@@ -38,6 +39,12 @@ public class SpawnAutoConfiguration {
     @ConditionalOnMissingBean
     public SpawnActorController actorController(SpawnProperties properties, ActorClassGraphEntityScan actorClassGraphEntityScan) {
         return new SpawnActorController(context, client, properties, actorClassGraphEntityScan);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public SpawnSystem actorSystem(SpawnActorController actorController) {
+        return new SpawnSystem(actorController);
     }
 
 }

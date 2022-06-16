@@ -1,5 +1,6 @@
 package io.eigr.spawn.springboot.starter.annotations;
 
+import com.google.protobuf.GeneratedMessageV3;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.AliasFor;
@@ -22,4 +23,7 @@ public @interface ActorEntity {
     String name() default "";
 
     boolean persistent() default true;
+
+    Class<? extends GeneratedMessageV3> stateType();
+
 }

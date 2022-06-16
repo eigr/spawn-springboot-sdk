@@ -1,6 +1,8 @@
 package io.eigr.spawn.springboot.starter;
 
-public final class Value<S, V> {
+import com.google.protobuf.GeneratedMessageV3;
+
+public final class Value<S extends GeneratedMessageV3, V extends GeneratedMessageV3> {
 
     enum ResponseType {
         REPLY, NO_REPLY
@@ -30,22 +32,22 @@ public final class Value<S, V> {
         return type;
     }
 
-    public static final class ActorValue {
-        private Object state;
-        private Object value;
+    public static final class ActorValue<S extends GeneratedMessageV3, V extends GeneratedMessageV3> {
+        private S state;
+        private V value;
 
         public ActorValue(){}
 
-        public static ActorValue at() {
+        public static <S, V> ActorValue at() {
             return new ActorValue();
         }
 
-        public ActorValue value(Object value) {
+        public ActorValue value(V value) {
             this.value = value;
             return this;
         }
 
-        public ActorValue state(Object state){
+        public ActorValue state(S state){
             this.state = state;
             return this;
         }
@@ -57,5 +59,15 @@ public final class Value<S, V> {
         public Value noReply() {
             return new Value(this.value, this.state, ResponseType.NO_REPLY);
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Value{");
+        sb.append("state=").append(state);
+        sb.append(", value=").append(value);
+        sb.append(", type=").append(type);
+        sb.append('}');
+        return sb.toString();
     }
 }

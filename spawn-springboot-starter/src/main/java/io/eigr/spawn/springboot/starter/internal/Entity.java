@@ -6,13 +6,16 @@ import java.util.Map;
 public final class Entity {
     private String actorName;
     private Class<?> actorType;
+
+    private Class stateType;
     private String actorBeanName;
     private boolean persistent;
     private Map<String, EntityMethod> commands = new HashMap<>();
 
-    public Entity(String actorName, Class<?> actorType, String actorBeanName, boolean persistent, Map<String, EntityMethod> commands) {
+    public Entity(String actorName, Class<?> actorType, Class stateType, String actorBeanName, boolean persistent, Map<String, EntityMethod> commands) {
         this.actorName = actorName;
         this.actorType = actorType;
+        this.stateType = stateType;
         this.actorBeanName = actorBeanName;
         this.persistent = persistent;
         this.commands = commands;
@@ -24,6 +27,10 @@ public final class Entity {
 
     public Class<?> getActorType() {
         return actorType;
+    }
+
+    public Class getStateType() {
+        return stateType;
     }
 
     public String getActorBeanName() {
@@ -59,7 +66,7 @@ public final class Entity {
             return method;
         }
 
-        public Class<?> getInputType() {
+        public Class getInputType() {
             return inputType;
         }
 

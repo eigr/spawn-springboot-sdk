@@ -15,8 +15,8 @@ import java.net.ConnectException;
 @Service
 public class OkHttpSpawnClient implements SpawnClient {
     public static final String SPAWN_MEDIA_TYPE = "application/octet-stream";
-    private static final Logger log = LoggerFactory.getLogger(OkHttpSpawnClient.class);
     private static final String SPAWN_REGISTER_URI = "/api/v1/system";
+    private static final Logger log = LoggerFactory.getLogger(OkHttpSpawnClient.class);
 
     private static final OkHttpClient client = new OkHttpClient();
 
@@ -32,7 +32,6 @@ public class OkHttpSpawnClient implements SpawnClient {
 
         Request request = new Request.Builder().url(makeURLFrom(SPAWN_REGISTER_URI)).post(body).build();
 
-        Response callInvocationResponse;
         Call call = client.newCall(request);
         try (Response response = call.execute()) {
             assert response.body() != null;
@@ -44,8 +43,27 @@ public class OkHttpSpawnClient implements SpawnClient {
     }
 
     @Override
+    @Retryable(value = ConnectException.class,
+            maxAttemptsExpression = "${retry.maxAttempts}", backoff = @Backoff(delayExpression = "${retry.maxDelay}"))
     public Protocol.InvocationResponse invoke(Protocol.InvocationRequest request) throws Exception {
-        return null;
+        RequestBody body = RequestBody.create(
+                request.toByteArray(), MediaType.parse(SPAWN_MEDIA_TYPE));
+
+        Request invocationRequest = new Request.Builder()
+                .url(makeURLForSystemAndActor(request.getSystem().getName(), request.getActor().getName()))
+                .post(body)
+                .build();
+
+        Call invocationCall = client.newCall(invocationRequest);
+        Response callInvocationResponse = invocationCall.execute();
+
+        return Protocol.InvocationResponse
+                .parseFrom(callInvocationResponse.body().bytes());
+    }
+
+    private String makeURLForSystemAndActor(String systemName, String actorName) {
+        String uri = String.format("/api/v1/system/%s/actors/%s/invoke", systemName, actorName);
+        return makeURLFrom(uri);
     }
 
     private String makeURLFrom(String uri) {
