@@ -139,7 +139,6 @@ public class SpawnTest {
         }
 
         Thread.sleep(5000);
-
         assertTrue(true);
     }
 
