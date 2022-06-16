@@ -5,7 +5,7 @@ import com.google.protobuf.GeneratedMessageV3;
 public final class Value<S extends GeneratedMessageV3, V extends GeneratedMessageV3> {
 
     enum ResponseType {
-        REPLY, NO_REPLY
+        REPLY, NO_REPLY, EMPTY_REPLY
     }
 
     private final S state;
@@ -13,6 +13,12 @@ public final class Value<S extends GeneratedMessageV3, V extends GeneratedMessag
     private final V value;
 
     private final ResponseType type;
+
+    public Value() {
+        this.state = null;
+        this.value = null;
+        this.type = ResponseType.EMPTY_REPLY;
+    }
 
     public Value(V value, S state, ResponseType type) {
         this.value = value;
@@ -61,8 +67,7 @@ public final class Value<S extends GeneratedMessageV3, V extends GeneratedMessag
         }
 
         public Value empty() {
-            // TODO Create a empty response
-            return null;
+            return new Value();
         }
     }
 
