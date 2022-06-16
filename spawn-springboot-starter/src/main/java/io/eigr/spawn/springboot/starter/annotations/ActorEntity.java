@@ -26,4 +26,8 @@ public @interface ActorEntity {
 
     Class<? extends GeneratedMessageV3> stateType();
 
+    long deactivatedTimeout() default 60000;
+
+    long snapshotTimeout() default 50000;
+
 }
