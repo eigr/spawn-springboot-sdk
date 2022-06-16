@@ -59,6 +59,11 @@ public final class Value<S extends GeneratedMessageV3, V extends GeneratedMessag
         public Value noReply() {
             return new Value(this.value, this.state, ResponseType.NO_REPLY);
         }
+
+        public Value empty() {
+            // TODO Create a empty response
+            return null;
+        }
     }
 
     @Override

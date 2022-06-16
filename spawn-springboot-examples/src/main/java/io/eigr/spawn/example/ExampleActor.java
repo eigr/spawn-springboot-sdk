@@ -15,17 +15,19 @@ public class ExampleActor {
     @Command(name = "get")
     public Value get(ActorContext<MyState> context) {
         log.info("Received invocation. Context: {}", context);
-        if(context.getState().isPresent()) {
+        if (context.getState().isPresent()) {
             MyState state = context.getState().get();
 
             return Value.ActorValue.<MyState, MyBusinessMessage>at()
                     .state(state)
-                    .noReply();
+                    .value(MyBusinessMessage.newBuilder()
+                            .setValue(context.getState().get().getValue())
+                            .build())
+                    .reply();
         }
 
         return Value.ActorValue.at()
-                .noReply();
-
+                .empty();
     }
 
     @Command(name = "sum", inputType = MyBusinessMessage.class)
@@ -33,8 +35,8 @@ public class ExampleActor {
         log.info("Received invocation. Message: {}. Context: {}", msg, context);
 
         int value = 1;
-        if(context.getState().isPresent()) {
-            log.info("State is present and value is {}", context.getState().get() );
+        if (context.getState().isPresent()) {
+            log.info("State is present and value is {}", context.getState().get());
             Optional<MyState> oldState = context.getState();
             value = oldState.get().getValue() + msg.getValue();
         } else {
