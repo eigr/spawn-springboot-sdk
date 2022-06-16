@@ -21,7 +21,7 @@ public class JoeActor {
             return Value.ActorValue.<MyState, MyBusinessMessage>at()
                     .state(state)
                     .value(MyBusinessMessage.newBuilder()
-                            .setValue(context.getState().get().getValue())
+                            .setValue(state.getValue())
                             .build())
                     .reply();
         }
