@@ -62,6 +62,8 @@ public final class ActorClassGraphEntityScan implements EntityScan {
 
         return actorEntities.stream().map(entity -> {
             ActorEntity actor = entity.getAnnotation(ActorEntity.class);
+            long deactivateTimeout = actor.deactivatedTimeout();
+            long snapshotTimeout = actor.snapshotTimeout();
             String actorBeanName = entity.getSimpleName();
             boolean isPersistent = actor.persistent();
             Class stateType = actor.stateType();
@@ -98,7 +100,16 @@ public final class ActorClassGraphEntityScan implements EntityScan {
                 }
             }
 
-            Entity entityType = new Entity(actorName, entity, stateType, actorBeanName, isPersistent, commands);
+            Entity entityType = new Entity(
+                    actorName,
+                    entity,
+                    stateType,
+                    actorBeanName,
+                    isPersistent,
+                    deactivateTimeout,
+                    snapshotTimeout,
+                    commands);
+
             log.debug("Registering Entity -> {}", entityType);
             return entityType;
         }).collect(Collectors.toList());

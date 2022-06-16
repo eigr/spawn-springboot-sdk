@@ -10,14 +10,20 @@ public final class Entity {
     private Class stateType;
     private String actorBeanName;
     private boolean persistent;
+
+    private long deactivateTimeout;
+
+    private long snapshotTimeout;
     private Map<String, EntityMethod> commands = new HashMap<>();
 
-    public Entity(String actorName, Class<?> actorType, Class stateType, String actorBeanName, boolean persistent, Map<String, EntityMethod> commands) {
+    public Entity(String actorName, Class<?> actorType, Class stateType, String actorBeanName, boolean persistent, long deactivateTimeout, long snapshotTimeout, Map<String, EntityMethod> commands) {
         this.actorName = actorName;
         this.actorType = actorType;
         this.stateType = stateType;
         this.actorBeanName = actorBeanName;
         this.persistent = persistent;
+        this.deactivateTimeout = deactivateTimeout;
+        this.snapshotTimeout = snapshotTimeout;
         this.commands = commands;
     }
 
@@ -39,6 +45,14 @@ public final class Entity {
 
     public boolean isPersistent() {
         return persistent;
+    }
+
+    public long getDeactivateTimeout() {
+        return deactivateTimeout;
+    }
+
+    public long getSnapshotTimeout() {
+        return snapshotTimeout;
     }
 
     public Map<String, EntityMethod> getCommands() {

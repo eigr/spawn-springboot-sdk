@@ -148,11 +148,11 @@ public class SpawnActorController {
         return entities.stream().map(actor -> {
 
             ActorOuterClass.ActorSnapshotStrategy snapshotStrategy = ActorOuterClass.ActorSnapshotStrategy.newBuilder()
-                    .setTimeout(ActorOuterClass.TimeoutStrategy.newBuilder().setTimeout(10000).build())
+                    .setTimeout(ActorOuterClass.TimeoutStrategy.newBuilder().setTimeout(actor.getSnapshotTimeout()).build())
                     .build();
 
             ActorOuterClass.ActorDeactivateStrategy deactivateStrategy = ActorOuterClass.ActorDeactivateStrategy.newBuilder()
-                    .setTimeout(ActorOuterClass.TimeoutStrategy.newBuilder().setTimeout(60000).build())
+                    .setTimeout(ActorOuterClass.TimeoutStrategy.newBuilder().setTimeout(actor.getDeactivateTimeout()).build())
                     .build();
 
             return ActorOuterClass.Actor.newBuilder()
