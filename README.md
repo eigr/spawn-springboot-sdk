@@ -224,8 +224,8 @@ public class Actor {
 
 **Explaining the code:**
 
-1. Every Actor must contain the ActorEntity annotation so that it can be registered as both a Spring Bean and a Spawn Actor.
-2. Use the Command annotation to tell Spawn which methods to expose as Actor actions. Every command must have a name by which it can be invoked and may contain other input and output type annotations.
+1. Every Actor must contain the `@ActorEntity` annotation so that it can be registered as both a Spring Bean and a Spawn Actor.
+2. Use the `@Command` annotation to tell Spawn which methods to expose as Actor actions. Every command must have a name by which it can be invoked and may contain other input and output type annotations.
 3. An ActorContext object will always be passed to the action method via Spawn's sidecar proxy. It is via ActorContext that it will be possible to access the current state of the Actor. This will always be the second argument of the method unless your method is not taking any business type arguments, in which case ActorContext will be passed as the first and only argument. This is used when your method just needs to return some value.
 4. To return values and the updated state it will always be necessary to use the return type `Value`. This in turn must be built through the `ActorValue` builder class. Return values can be one of three types:
    * **reply**: When the intention is to send some type of data to the caller.
