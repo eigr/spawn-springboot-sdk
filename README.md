@@ -10,7 +10,7 @@ For a broader understanding of Spawn please consult its official [repository](ht
 
 ## How to use
 
-First add the following settings to your pom.xml file:
+First add the following settings to your `pom.xml` file:
 
 ```xml
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
