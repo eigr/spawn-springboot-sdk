@@ -11,7 +11,7 @@
     <parent>
         <groupId>io.eigr</groupId>
         <artifactId>spawn-springboot-sdk</artifactId>
-        <version>0.1.4</version>
+        <version>0.1.5</version>
     </parent>
 
     <properties>
