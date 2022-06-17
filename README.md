@@ -126,6 +126,7 @@ For that create a folder called ***proto*** inside ***src/main***.
 
 Now just add your protobuf files that reflect your business domain inside **src/main/proto** folder. For example:
 
+`example.proto`
 ```protobuf
 syntax = "proto3";
 
@@ -153,7 +154,7 @@ while `MyBusiness` is the type of message that we will send and receive from thi
 
 Now that the protobuf types have been created we can proceed with the code. Example definition of an Actor:
 
-Actor.java:
+`Actor.java`:
 
 ```java
 package io.eigr.spawn.example;
@@ -231,7 +232,7 @@ public class Actor {
    * **noReply**: When you don't want to send any return to the caller and only the Actor's state can be updated.
    * **empty**: Similar to noReply but no action will be taken regarding the actor state.
 
-App.java:
+`App.java`:
 
 ```java
 package io.eigr.spawn.example;
