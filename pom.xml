@@ -15,6 +15,14 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/eigr-labs/spawn-springboot-sdk</url>
+        </repository>
+    </distributionManagement>
+
     <modules>
         <module>spawn-springboot-starter</module>
         <module>spawn-springboot-examples</module>
