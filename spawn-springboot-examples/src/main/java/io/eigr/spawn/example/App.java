@@ -29,10 +29,10 @@ public class App {
 
                 MyBusinessMessage sumResult = (MyBusinessMessage) actorSystem.invoke("joe", "sum", arg, MyBusinessMessage.class);
                 log.info("Actor invoke Sum Actor Action value result: {}", sumResult.getValue());
-
-                MyBusinessMessage getResult = (MyBusinessMessage) actorSystem.invoke("joe", "get", arg, MyBusinessMessage.class);
-                log.info("Actor invoke Get Actor Action value result: {}", getResult.getValue());
             }
+
+            MyBusinessMessage getResult = (MyBusinessMessage) actorSystem.invoke("joe", "get", MyBusinessMessage.class);
+            log.info("Actor invoke Get Actor Action value result: {}", getResult.getValue());
         };
     }
 }

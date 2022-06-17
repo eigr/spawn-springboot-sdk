@@ -1,6 +1,7 @@
 package io.eigr.spawn.springboot.starter.internal;
 
 import com.google.protobuf.Any;
+import com.google.protobuf.Empty;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.eigr.functions.protocol.Protocol;
@@ -73,37 +74,12 @@ public class SpawnActorController {
         client.register(registration);
     }
 
+    public <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invoke(String actor, String cmd, Class<T> outputType) throws Exception {
+        return invokeActor(actor, cmd, Empty.getDefaultInstance(), outputType);
+    }
+
     public <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invoke(String actor, String cmd, S value, Class<T> outputType) throws Exception {
-        Objects.requireNonNull(actorSystem, "ActorSystem not initialized!");
-
-        if (actors.containsKey(actor)) {
-            final ActorOuterClass.Actor actorRef = actors.get(actor);
-
-            Any stateValue = Any.pack(value);
-
-            Protocol.InvocationRequest invocationRequest = Protocol.InvocationRequest.newBuilder()
-                    .setAsync(false)
-                    .setSystem(actorSystem)
-                    .setActor(actorRef)
-                    .setCommandName(cmd)
-                    .setValue(stateValue)
-                    .build();
-
-            Protocol.InvocationResponse resp = client.invoke(invocationRequest);
-            final Protocol.RequestStatus status = resp.getStatus();
-            switch (status.getStatus()) {
-                case UNKNOWN:
-                case ERROR:
-                case UNRECOGNIZED:
-                    throw new ActorInvokeException();
-                case ACTOR_NOT_FOUND:
-                    throw new ActorNotFoundException();
-                case OK:
-                    return outputType.cast(resp.getValue().unpack(outputType));
-            }
-        }
-
-        throw new ActorNotFoundException();
+        return invokeActor(actor, cmd, value, outputType);
     }
 
     public Value callAction(String system, String actor, String commandName, Any value, Protocol.Context context) {
@@ -141,6 +117,39 @@ public class SpawnActorController {
             }
         }
         return null;
+    }
+
+    private <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invokeActor(String actor, String cmd, S value, Class<T> outputType) throws Exception {
+        Objects.requireNonNull(actorSystem, "ActorSystem not initialized!");
+
+        if (actors.containsKey(actor)) {
+            final ActorOuterClass.Actor actorRef = actors.get(actor);
+
+            Any stateValue = Any.pack(value);
+
+            Protocol.InvocationRequest invocationRequest = Protocol.InvocationRequest.newBuilder()
+                    .setAsync(false)
+                    .setSystem(actorSystem)
+                    .setActor(actorRef)
+                    .setCommandName(cmd)
+                    .setValue(stateValue)
+                    .build();
+
+            Protocol.InvocationResponse resp = client.invoke(invocationRequest);
+            final Protocol.RequestStatus status = resp.getStatus();
+            switch (status.getStatus()) {
+                case UNKNOWN:
+                case ERROR:
+                case UNRECOGNIZED:
+                    throw new ActorInvokeException();
+                case ACTOR_NOT_FOUND:
+                    throw new ActorNotFoundException();
+                case OK:
+                    return outputType.cast(resp.getValue().unpack(outputType));
+            }
+        }
+
+        throw new ActorNotFoundException();
     }
 
     @NotNull

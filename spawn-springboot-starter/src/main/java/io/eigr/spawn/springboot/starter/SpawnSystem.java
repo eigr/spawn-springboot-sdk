@@ -18,4 +18,12 @@ public class SpawnSystem {
     public <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invoke(Class actor, String cmd, S value, Class<T> outputType) throws Exception {
         return actorController.invoke(actor.getSimpleName(), cmd, value, outputType);
     }
+
+    public <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invoke(String actor, String cmd, Class<T> outputType) throws Exception {
+        return actorController.invoke(actor, cmd, outputType);
+    }
+
+    public <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invoke(Class actor, String cmd, Class<T> outputType) throws Exception {
+        return actorController.invoke(actor.getSimpleName(), cmd, outputType);
+    }
 }
