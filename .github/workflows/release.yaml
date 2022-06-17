@@ -15,6 +15,9 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       - name: Publish package
-        run: mvn -DskipTests --batch-mode protobuf:test-compile deploy
+        run: |
+          cd spawn-springboot-starter && mvn protobuf:test-compile && cd ..
+          mvn install -DskipTests
+          mvn --batch-mode deploy -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
