@@ -12,7 +12,6 @@ import org.springframework.context.annotation.ClassPathScanningCandidateComponen
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InaccessibleObjectException;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
@@ -94,7 +93,7 @@ public final class ActorClassGraphEntityScan implements EntityScan {
                         Entity.EntityMethod command = new Entity.EntityMethod(commandName, method, inputType, outputType);
 
                         commands.put(commandName, command);
-                    } catch (InaccessibleObjectException | SecurityException e) {
+                    } catch (SecurityException e) {
                         log.error("Failure on load Actor Command", e);
                     }
                 }
