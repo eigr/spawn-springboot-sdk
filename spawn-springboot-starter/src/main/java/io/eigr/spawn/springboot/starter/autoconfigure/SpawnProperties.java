@@ -2,7 +2,7 @@ package io.eigr.spawn.springboot.starter.autoconfigure;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "io.eigr.spawn")
+@ConfigurationProperties(prefix = "io.eigr.spawn.springboot.starter")
 public class SpawnProperties {
 
     public final String ACTOR_SYSTEM = "spawn-system";
