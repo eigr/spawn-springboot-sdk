@@ -1,0 +1,49 @@
+version: '2.1'
+services:
+  db:
+    image: mysql:latest
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
+    environment:
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin
+      - MYSQL_ROOT_PASSWORD=admin
+      - MYSQL_DATABASE=eigr-functions-db
+
+  spawn-proxy:
+    image: eigr/spawn-proxy:0.1.0
+    depends_on:
+      db:
+        condition: service_healthy
+    links:
+      - db
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9001/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    environment:
+      - PROXY_HTTP_PORT=9001
+      - PROXY_DATABASE_HOST=db
+      - PROXY_DATABASE_TYPE=mysql
+      - SPAWN_STATESTORE_KEY=3Jnb0hZiHIzHTOih7t2cTEPEpY98Tu1wvQkPfq/XwqE=
+    ports:
+      - "9001:9001"
+
+  user-function:
+    image: eigr/spawn-springboot-examples:latest
+    ports:
+      - "8090:8090"
+    environment:
+      - SPAWN_PROXY_PORT=9001
+      - SPAWN_ACTOR_SYSTEM=spawn-system
+      - SPAWN_PROXY_INTERFACE=spawn-proxy
+    depends_on:
+      spawn-proxy:
+        condition: service_healthy
+    links:
+      - spawn-proxy
