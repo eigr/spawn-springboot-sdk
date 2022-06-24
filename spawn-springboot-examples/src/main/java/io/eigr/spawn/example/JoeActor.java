@@ -12,7 +12,7 @@ import java.util.Optional;
 @ActorEntity(name = "joe", stateType = MyState.class, snapshotTimeout = 10000, deactivatedTimeout = 50000)
 public class JoeActor {
 
-    @Command(name = "get")
+    @Command
     public Value get(ActorContext<MyState> context) {
         log.info("Received invocation. Context: {}", context);
         if (context.getState().isPresent()) {

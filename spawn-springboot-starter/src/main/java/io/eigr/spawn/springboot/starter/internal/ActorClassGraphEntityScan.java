@@ -79,7 +79,7 @@ public final class ActorClassGraphEntityScan implements EntityScan {
                         method.setAccessible(true);
                         String methodName = method.getName();
                         String commandName = (
-                                (!Objects.isNull(cmd.name()) || !cmd.name().isEmpty()) ? cmd.name() : methodName
+                                (!cmd.name().equalsIgnoreCase("")) ? cmd.name() : methodName
                         );
                         Class<?> inputType = (
                                 !cmd.inputType().isAssignableFrom(Command.Default.class) ? cmd.inputType() :
