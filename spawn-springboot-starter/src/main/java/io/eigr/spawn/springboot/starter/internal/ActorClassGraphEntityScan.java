@@ -109,6 +109,7 @@ public final class ActorClassGraphEntityScan implements EntityScan {
                     snapshotTimeout,
                     commands);
 
+            log.info("Registering Actor: {}", actorName);
             log.debug("Registering Entity -> {}", entityType);
             return entityType;
         }).collect(Collectors.toList());

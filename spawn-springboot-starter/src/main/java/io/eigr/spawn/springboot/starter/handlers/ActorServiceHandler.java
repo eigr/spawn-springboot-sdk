@@ -30,7 +30,7 @@ public final class ActorServiceHandler {
             produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE}
     )
     public Mono<ResponseEntity<ByteArrayResource>> post(@RequestBody() byte[] data) throws InvalidProtocolBufferException {
-        log.debug("Received Actor action request: {}", data);
+        log.info("Received Actor action request: {}", data);
         Protocol.ActorInvocation actorInvocationRequest = Protocol.ActorInvocation.parseFrom(data);
         Protocol.Context context = actorInvocationRequest.getCurrentContext();
 
@@ -42,7 +42,7 @@ public final class ActorServiceHandler {
 
         Value valueResponse = actorController.callAction(system, actor, commandName, value, context);
         //valueResponse.getType();
-        log.debug("Actor {} received Action invocation for command {}. Result value: {}", actor, commandName, valueResponse);
+        log.info("Actor {} received Action invocation for command {}. Result value: {}", actor, commandName, valueResponse);
         Any encodedState = Any.pack(valueResponse.getState());
         Any encodedValue = Any.pack(valueResponse.getValue());
 

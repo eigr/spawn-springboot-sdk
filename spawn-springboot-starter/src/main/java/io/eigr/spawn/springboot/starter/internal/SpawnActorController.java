@@ -115,6 +115,8 @@ public class SpawnActorController {
                     throw new RuntimeException(e);
                 }
             }
+        } else {
+            System.out.println("Nao entrou na condicao");
         }
         return null;
     }
@@ -122,31 +124,31 @@ public class SpawnActorController {
     private <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invokeActor(String actor, String cmd, S value, Class<T> outputType) throws Exception {
         Objects.requireNonNull(actorSystem, "ActorSystem not initialized!");
 
-        if (actors.containsKey(actor)) {
-            final ActorOuterClass.Actor actorRef = actors.get(actor);
+        final ActorOuterClass.Actor actorRef = ActorOuterClass.Actor.newBuilder()
+                .setName(actor)
+                .build();
 
-            Any stateValue = Any.pack(value);
+        Any stateValue = Any.pack(value);
 
-            Protocol.InvocationRequest invocationRequest = Protocol.InvocationRequest.newBuilder()
-                    .setAsync(false)
-                    .setSystem(actorSystem)
-                    .setActor(actorRef)
-                    .setCommandName(cmd)
-                    .setValue(stateValue)
-                    .build();
+        Protocol.InvocationRequest invocationRequest = Protocol.InvocationRequest.newBuilder()
+                .setAsync(false)
+                .setSystem(actorSystem)
+                .setActor(actorRef)
+                .setCommandName(cmd)
+                .setValue(stateValue)
+                .build();
 
-            Protocol.InvocationResponse resp = client.invoke(invocationRequest);
-            final Protocol.RequestStatus status = resp.getStatus();
-            switch (status.getStatus()) {
-                case UNKNOWN:
-                case ERROR:
-                case UNRECOGNIZED:
-                    throw new ActorInvokeException();
-                case ACTOR_NOT_FOUND:
-                    throw new ActorNotFoundException();
-                case OK:
-                    return outputType.cast(resp.getValue().unpack(outputType));
-            }
+        Protocol.InvocationResponse resp = client.invoke(invocationRequest);
+        final Protocol.RequestStatus status = resp.getStatus();
+        switch (status.getStatus()) {
+            case UNKNOWN:
+            case ERROR:
+            case UNRECOGNIZED:
+                throw new ActorInvokeException();
+            case ACTOR_NOT_FOUND:
+                throw new ActorNotFoundException();
+            case OK:
+                return outputType.cast(resp.getValue().unpack(outputType));
         }
 
         throw new ActorNotFoundException();
