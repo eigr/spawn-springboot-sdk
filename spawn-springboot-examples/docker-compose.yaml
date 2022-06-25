@@ -1,4 +1,4 @@
-version: '2.1'
+version: '2.2'
 services:
   db:
     image: mysql:latest
@@ -23,27 +23,27 @@ services:
       - db
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9001/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 10
+      interval: 10s
+      timeout: 5s
+      retries: 30
     environment:
       - PROXY_HTTP_PORT=9001
       - PROXY_DATABASE_HOST=db
       - PROXY_DATABASE_TYPE=mysql
       - SPAWN_STATESTORE_KEY=3Jnb0hZiHIzHTOih7t2cTEPEpY98Tu1wvQkPfq/XwqE=
+      - USER_FUNCTION_HOST=springboot-user-function
+      - USER_FUNCTION_PORT=8099
     ports:
       - "9001:9001"
 
-  user-function:
+  springboot-user-function:
     image: eigr/spawn-springboot-examples:latest
+    restart: always
     ports:
-      - "8090:8090"
+      - "8099:8099"
     environment:
       - SPAWN_PROXY_PORT=9001
       - SPAWN_ACTOR_SYSTEM=spawn-system
       - SPAWN_PROXY_INTERFACE=spawn-proxy
-    depends_on:
-      spawn-proxy:
-        condition: service_healthy
     links:
       - spawn-proxy
