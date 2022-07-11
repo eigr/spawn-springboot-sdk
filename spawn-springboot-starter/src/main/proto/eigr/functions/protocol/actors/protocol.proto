@@ -150,7 +150,7 @@ message ProxyInfo {
 
 message RegistrationResponse {
 
-    RequestStatus staus = 1;
+    RequestStatus status = 1;
 
     ProxyInfo proxy_info = 2;
 }
@@ -213,7 +213,7 @@ message ActorInvocation {
     google.protobuf.Any value = 5;
 }
 
-// The user role's response after executing the action originated by the local proxy request via ActorInvocation.
+// The user function's response after executing the action originated by the local proxy request via ActorInvocation.
 //
 // Params:
 //   actor_name: The name of the Actor handling the InvocationRequest request, also called the target Actor.

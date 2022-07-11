@@ -22,7 +22,7 @@ public class App {
         return args -> {
             SpawnSystem actorSystem = ctx.getBean(SpawnSystem.class);
             log.info("Let's invoke some Actor");
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 1000; i++) {
                 MyBusinessMessage arg = MyBusinessMessage.newBuilder()
                         .setValue(i)
                         .build();
