@@ -51,11 +51,36 @@ message ActorState {
     google.protobuf.Any state = 2;
 }
 
+// A Actor instance identification
+message ActorId {
+    // While the actor name indicates the entity itself, an ActorId indicates the instance of a real actor process.
+    // For this reason this attribute is the attribute to use for the lookup of an actor in persistent storage.
+    // The format used for the key must be a valid URI in this format: ´actor://system/:name/actors/:actor_name/:entity_id´
+    string resource = 1;
+}
+
+// Actor abstraction.
 message Actor {
+    // The name of a Actor Entity.
     string name = 1;
-    string entity_id = 2;
+
+    // The id of instance of an User Function Entity.
+    // A user function defines an actor that has a ´name´ as part of its unique key in persistent storage,
+    // this identification mechanism is sometimes not sufficient to identify an actor
+    // when the invocation mechanism requires that multiple instances of an actor can be created.
+    // An entity id is used to compose the uri that identifies the Actor in persistent storage.
+    // Default is ´parent´
+    ActorId entity_id = 2;
+
+    // Indicates whether an actor's state should be persisted in a definitive store.
     bool persistent = 3;
+
+    // A Actor state.
     ActorState state = 4;
+
+    // Snapshot strategy
     ActorSnapshotStrategy snapshot_strategy = 5;
+
+    // Deactivate strategy
     ActorDeactivateStrategy deactivate_strategy = 6;
 }
