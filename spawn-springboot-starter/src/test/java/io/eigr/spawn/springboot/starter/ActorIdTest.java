@@ -20,6 +20,7 @@ public class ActorIdTest {
         String path = String.format("/test/actors/mike/%s", instanceId);
         String actorId = String.format("%s://system/test/actors/mike/%s", scheme, instanceId);
         URI joeActorId = URI.create(actorId);
+
         System.out.println(String.format("URI Scheme: %s",  joeActorId.getScheme()));
         System.out.println(String.format("URI Host: %s",  joeActorId.getHost()));
         System.out.println(String.format("URI Path: %s",  joeActorId.getPath()));
@@ -30,6 +31,5 @@ public class ActorIdTest {
         assertEquals("system", joeActorId.getHost());
         assertEquals(path, joeActorId.getPath());
         assertEquals("actor", joeActorId.getScheme());
-
     }
 }
