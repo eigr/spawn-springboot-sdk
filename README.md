@@ -45,7 +45,7 @@ First add the following settings to your `pom.xml` file:
         <dependency>
             <groupId>com.github.eigr-labs.spawn-springboot-sdk</groupId>
             <artifactId>spawn-springboot-starter</artifactId>
-            <version>v0.1.9</version>
+            <version>v0.1.10</version>
         </dependency>
 
         <dependency>
