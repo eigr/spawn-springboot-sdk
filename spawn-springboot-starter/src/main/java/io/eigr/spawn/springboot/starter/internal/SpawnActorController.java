@@ -115,10 +115,8 @@ public class SpawnActorController {
                     throw new RuntimeException(e);
                 }
             }
-        } else {
-            System.out.println("Nao entrou na condicao");
         }
-        return null;
+        throw new ActorNotFoundException();
     }
 
     private <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invokeActor(String actor, String cmd, S value, Class<T> outputType) throws Exception {
