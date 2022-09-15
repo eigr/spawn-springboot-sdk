@@ -11,13 +11,11 @@ import java.util.Optional;
 @Log4j2
 @ActorEntity(name = "joe", stateType = MyState.class, snapshotTimeout = 10000, deactivatedTimeout = 50000)
 public class JoeActor {
-
     @Command
     public Value get(ActorContext<MyState> context) {
         log.info("Received invocation. Context: {}", context);
         if (context.getState().isPresent()) {
             MyState state = context.getState().get();
-
             return Value.ActorValue.<MyState, MyBusinessMessage>at()
                     .state(state)
                     .value(MyBusinessMessage.newBuilder()
@@ -25,7 +23,6 @@ public class JoeActor {
                             .build())
                     .reply();
         }
-
         return Value.ActorValue.at()
                 .empty();
     }
@@ -33,7 +30,6 @@ public class JoeActor {
     @Command(name = "sum", inputType = MyBusinessMessage.class)
     public Value sum(MyBusinessMessage msg, ActorContext<MyState> context) {
         log.info("Received invocation. Message: {}. Context: {}", msg, context);
-
         int value = 1;
         if (context.getState().isPresent()) {
             log.info("State is present and value is {}", context.getState().get());

@@ -23,15 +23,15 @@ import static org.junit.Assert.assertTrue;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT,
         properties = {
-                "server.port=8090",
-                "management.server.port=8090"
+                "server.port=8091",
+                "management.server.port=8091"
         })
 @RunWith(SpringJUnit4ClassRunner.class)
 public class SpawnTest {
 
-    public static final String SPAWN_PROXY_ACTORS_ACTOR_INVOKE_URL = "http://localhost:9001/api/v1/system/test-system/actors/actor-test-01/invoke";
+    public static final String SPAWN_PROXY_ACTORS_ACTOR_INVOKE_URL = "http://localhost:9002/api/v1/system/test-system/actors/actor-test-01/invoke";
     public static final String SPAWN_MEDIA_TYPE = "application/octet-stream";
-    public static final String SPAWN_PROXY_ACTORSYSTEM_URL = "http://localhost:9001/api/v1/system";
+    public static final String SPAWN_PROXY_ACTORSYSTEM_URL = "http://localhost:9002/api/v1/system";
     private final OkHttpClient client = new OkHttpClient();
 
 
@@ -42,7 +42,7 @@ public class SpawnTest {
     public void shouldAnswerWithTrue() throws IOException, InterruptedException {
 
         HashMap<String, ActorOuterClass.Actor> actors = new HashMap<>();
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 100; i++) {
             String actorName = String.format("actor-test-0%s", i);
             actors.put(actorName, makeActor(actorName, 1));
         }
