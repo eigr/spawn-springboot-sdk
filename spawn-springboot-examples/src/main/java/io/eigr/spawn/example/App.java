@@ -38,8 +38,10 @@ public class App {
 
             Thread.sleep(20000);
 
-            for (int i = 0; i < 200; i++) {
-                String actorName = String.format("concreteActor-%s", i);
+            IntStream callStream = IntStream.range(0, 200);
+
+            /*callStream.forEach(actorIndex -> {
+                String actorName = String.format("concreteActor-%s", actorIndex);
 
                 IntStream.range(0, 1000)
                         .forEach(index -> {
@@ -52,8 +54,23 @@ public class App {
                                 throw new RuntimeException(e);
                             }
                         });
+            });*/
 
-            }
+            callStream.parallel().forEach(actorIndex -> {
+                String actorName = String.format("concreteActor-%s", actorIndex);
+
+                IntStream.range(0, 1000)
+                        .forEach(index -> {
+                            try {
+                                log.info("Let's invoke {}", actorName);
+                                MyBusinessMessage input = MyBusinessMessage.newBuilder().setValue(1).build();
+
+                                actorSystem.invoke(actorName, "sum", input, MyBusinessMessage.class);
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+            });
 
             /*
             log.info("Let's invoke some Actor");
