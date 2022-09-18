@@ -1,6 +1,7 @@
 package io.eigr.spawn.example;
 
 import io.eigr.spawn.springboot.starter.ActorContext;
+import io.eigr.spawn.springboot.starter.ActorIdentity;
 import io.eigr.spawn.springboot.starter.Value;
 import io.eigr.spawn.springboot.starter.annotations.ActorEntity;
 import io.eigr.spawn.springboot.starter.annotations.Command;
@@ -9,8 +10,14 @@ import lombok.extern.log4j.Log4j2;
 import java.util.Optional;
 
 @Log4j2
-@ActorEntity(name = "joe", stateType = MyState.class, snapshotTimeout = 10000, deactivatedTimeout = 50000)
-public class JoeActor {
+@ActorEntity(
+        name = ActorIdentity.Abstract,
+        stateType = MyState.class,
+        snapshotTimeout = 10000,
+        deactivatedTimeout = 15000
+)
+public class AbstractActor {
+
     @Command
     public Value get(ActorContext<MyState> context) {
         log.info("Received invocation. Context: {}", context);

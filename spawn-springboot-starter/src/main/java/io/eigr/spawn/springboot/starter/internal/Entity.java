@@ -31,6 +31,10 @@ public final class Entity {
         return actorName;
     }
 
+    public void setActorName(String actorName) {
+        this.actorName = actorName;
+    }
+
     public Class<?> getActorType() {
         return actorType;
     }

@@ -11,6 +11,10 @@ public class SpawnSystem {
         this.actorController = actorController;
     }
 
+    public void spawn(String name, Class actor) throws Exception {
+        actorController.spawn(name, actor);
+    }
+
     public <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invoke(String actor, String cmd, S value, Class<T> outputType) throws Exception {
         return actorController.invoke(actor, cmd, value, outputType);
     }
