@@ -7,6 +7,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.eigr.functions.protocol.Protocol;
 import io.eigr.functions.protocol.actors.ActorOuterClass;
 import io.eigr.spawn.springboot.starter.ActorContext;
+import io.eigr.spawn.springboot.starter.ActorIdentity;
 import io.eigr.spawn.springboot.starter.Value;
 import io.eigr.spawn.springboot.starter.autoconfigure.SpawnProperties;
 import io.eigr.spawn.springboot.starter.exceptions.ActorInvokeException;
@@ -16,18 +17,15 @@ import org.springframework.context.ApplicationContext;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SpawnActorController {
 
-    private final List<Entity> entities;
+    private List<Entity> entities;
 
-    private final Map<String, ActorOuterClass.Actor> actors;
+    private Map<String, ActorOuterClass.Actor> actors;
 
     private final ApplicationContext context;
 
@@ -49,8 +47,15 @@ public class SpawnActorController {
     }
 
     public void register() throws Exception {
+        Map<String, ActorOuterClass.Actor> realActors = new HashMap<>();
+        for (Map.Entry<String, ActorOuterClass.Actor> actor : actors.entrySet()) {
+            if (!actor.getValue().getName().equalsIgnoreCase(ActorIdentity.Abstract)) {
+                realActors.put(actor.getKey(), actor.getValue());
+            }
+        }
+
         ActorOuterClass.Registry registry = ActorOuterClass.Registry.newBuilder()
-                .putAllActors(actors)
+                .putAllActors(realActors)
                 .build();
 
         actorSystem = ActorOuterClass.ActorSystem.newBuilder()
@@ -72,6 +77,40 @@ public class SpawnActorController {
                 .build();
 
         client.register(registration);
+    }
+
+    public void spawn(String name, Class actorClass) throws Exception {
+        Map<String, ActorOuterClass.Actor> concreteActor = new HashMap<>();
+        Optional<Entity> actorEntity = actorClassGraphEntityScan.findEntity(actorClass);
+
+        if (actorEntity.isPresent()) {
+            Entity entity = actorEntity.get();
+            entity.setActorName(name);
+
+            ActorOuterClass.Actor actor = getActor(entity);
+            concreteActor.put(name, actor);
+
+            if (!actors.containsKey(name)) {
+                actors.put(name, actor);
+                this.entities.add(entity);
+            }
+
+            ActorOuterClass.Registry registry = ActorOuterClass.Registry.newBuilder()
+                    .putAllActors(actors)
+                    .build();
+
+            actorSystem = ActorOuterClass.ActorSystem.newBuilder()
+                    .setName(spawnProperties.getActorSystem())
+                    .setRegistry(registry)
+                    .build();
+
+
+            Protocol.SpawnRequest registration = Protocol.SpawnRequest.newBuilder()
+                    .setActorSystem(actorSystem)
+                    .build();
+
+            client.spawn(registration);
+        }
     }
 
     public <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invoke(String actor, String cmd, Class<T> outputType) throws Exception {
@@ -175,7 +214,27 @@ public class SpawnActorController {
         }).collect(Collectors.toMap(ActorOuterClass.Actor::getName, Function.identity()));
     }
 
+    private ActorOuterClass.Actor getActor(Entity entity) {
+        ActorOuterClass.ActorSnapshotStrategy snapshotStrategy = ActorOuterClass.ActorSnapshotStrategy.newBuilder()
+                .setTimeout(ActorOuterClass.TimeoutStrategy.newBuilder().setTimeout(entity.getSnapshotTimeout()).build())
+                .build();
+
+        ActorOuterClass.ActorDeactivateStrategy deactivateStrategy = ActorOuterClass.ActorDeactivateStrategy.newBuilder()
+                .setTimeout(ActorOuterClass.TimeoutStrategy.newBuilder().setTimeout(entity.getDeactivateTimeout()).build())
+                .build();
+
+        return ActorOuterClass.Actor.newBuilder()
+                .setName(entity.getActorName())
+                .setPersistent(entity.isPersistent())
+                .setSnapshotStrategy(snapshotStrategy)
+                .setDeactivateStrategy(deactivateStrategy)
+                .setState(ActorOuterClass.ActorState.newBuilder().build())
+                .build();
+    }
+
     private Optional<Entity> getEntityByActor(String actor) {
-        return entities.stream().filter(e -> e.getActorName().equalsIgnoreCase(actor)).findFirst();
+        return entities.stream()
+                .filter(e -> e.getActorName().equalsIgnoreCase(actor))
+                .findFirst();
     }
 }

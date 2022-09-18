@@ -1,5 +1,6 @@
 package io.eigr.spawn.springboot.starter.internal;
 
+import io.eigr.spawn.springboot.starter.ActorIdentity;
 import io.eigr.spawn.springboot.starter.annotations.ActorEntity;
 import io.eigr.spawn.springboot.starter.annotations.Command;
 import io.eigr.spawn.springboot.starter.autoconfigure.SpawnProperties;
@@ -52,6 +53,13 @@ public final class ActorClassGraphEntityScan implements EntityScan {
         return actors;
     }
 
+    public Optional<Entity> findEntity(Class type) {
+        List<Entity> actors = getActors();
+        return actors.stream()
+                .filter(entity -> entity.getActorType() == type)
+                .findFirst();
+    }
+
     private List<Entity> getActors() {
         return getEntities();
     }
@@ -66,9 +74,14 @@ public final class ActorClassGraphEntityScan implements EntityScan {
             String actorBeanName = entity.getSimpleName();
             boolean isPersistent = actor.persistent();
             Class stateType = actor.stateType();
-            String actorName = (
-                    (!Objects.isNull(actor.name()) || !actor.name().isEmpty()) ? actor.name() : actorBeanName
-            );
+
+            String actorName;
+            if ((!Objects.isNull(actor.name()) || !actor.name().isEmpty()
+                    && !actor.name().equalsIgnoreCase(ActorIdentity.Abstract))) {
+                actorName = actor.name();
+            } else {
+                actorName = actorBeanName;
+            }
 
             final Map<String, Entity.EntityMethod> commands = new HashMap<>();
             for (Method method : entity.getDeclaredMethods()) {
@@ -112,7 +125,8 @@ public final class ActorClassGraphEntityScan implements EntityScan {
             log.info("Registering Actor: {}", actorName);
             log.debug("Registering Entity -> {}", entityType);
             return entityType;
-        }).collect(Collectors.toList());
+        })
+                .collect(Collectors.toList());
     }
 
     private List<Class<?>> getClassAnnotationWith(Class<? extends Annotation> annotationType) {

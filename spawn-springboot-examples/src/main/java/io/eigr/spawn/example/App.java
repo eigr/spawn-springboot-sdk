@@ -11,9 +11,6 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
-import java.time.Duration;
-import java.time.Instant;
-
 @Log4j2
 @EnableSpawn
 @SpringBootApplication
@@ -29,13 +26,76 @@ public class App {
     public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
         return args -> {
             SpawnSystem actorSystem = ctx.getBean(SpawnSystem.class);
+
+            /*
+            HashMap<String, ActorOuterClass.Actor> actors = new HashMap<>();
+            for (int i = 0; i < 60000; i++) {
+                String actorName = String.format("actor-test-%s", i);
+                actors.put(actorName, makeActor(actorName, 1));
+            }
+
+            ActorOuterClass.Registry registry = ActorOuterClass.Registry.newBuilder()
+                    .putAllActors(actors)
+                    .build();
+
+            ActorOuterClass.ActorSystem actorSystem = ActorOuterClass.ActorSystem.newBuilder()
+                    .setName("test-system")
+                    .setRegistry(registry)
+                    .build();
+
+            Protocol.ServiceInfo si = Protocol.ServiceInfo.newBuilder()
+                    .setServiceName("jvm-sdk")
+                    .setServiceVersion("0.1.1")
+                    .setServiceRuntime(System.getProperty("java.version"))
+                    .setProtocolMajorVersion(1)
+                    .setProtocolMinorVersion(1)
+                    .build();
+
+            Protocol.RegistrationRequest registration = Protocol.RegistrationRequest.newBuilder()
+                    .setServiceInfo(si)
+                    .setActorSystem(actorSystem)
+                    .build();
+
+            RequestBody body = RequestBody.create(
+                    registration.toByteArray(), MediaType.parse(SPAWN_MEDIA_TYPE));
+
+            Request request = new Request.Builder()
+                    .url(SPAWN_PROXY_ACTORSYSTEM_URL)
+                    .post(body)
+                    .build();
+
+            log.info("Send registration request...");
+            Call call = client.newCall(request);
+            try (Response response = call.execute()) {
+                Protocol.RegistrationResponse registrationResponse = Protocol.RegistrationResponse
+                        .parseFrom(response.body().bytes());
+                log.info("Registration response: {}", registrationResponse);
+            }
+
+            Thread.sleep(5000);
+            */
+
+            for (int i = 0; i < 1000; i++) {
+                String actorName = String.format("concreteActor-%s", i);
+                log.info("Let's spawning Actor {}", actorName);
+                actorSystem.spawn(actorName, AbstractActor.class);
+            }
+
+            for (int i = 0; i < 1000; i++) {
+                String actorName = String.format("concreteActor-%s", i);
+                log.info("Let's invoke {}", actorName);
+                MyBusinessMessage input = MyBusinessMessage.newBuilder().setValue(1).build();
+                actorSystem.invoke(actorName, "sum", input, MyBusinessMessage.class);
+            }
+
+            /*
             log.info("Let's invoke some Actor");
-            for (int i = 0; i < 24000; i++) {
+            for (int i = 0; i < 50000; i++) {
                 MyBusinessMessage arg = MyBusinessMessage.newBuilder().setValue(i).build();
 
                 Instant initialInvokeRequestTime = Instant.now();
                 MyBusinessMessage sumResult =
-                        (MyBusinessMessage) actorSystem.invoke("zezinho", "sum", arg, MyBusinessMessage.class);
+                        (MyBusinessMessage) actorSystem.invoke("joe", "sum", arg, MyBusinessMessage.class);
 
                 log.info("Actor invoke Sum Actor Action value result: {}. Request Time Elapsed: {}ms",
                         sumResult.getValue(), Duration.between(initialInvokeRequestTime, Instant.now()).toMillis());
@@ -43,10 +103,14 @@ public class App {
 
             Instant initialInvokeRequestTime = Instant.now();
             MyBusinessMessage getResult =
-                    (MyBusinessMessage) actorSystem.invoke("zezinho", "get", MyBusinessMessage.class);
+                    (MyBusinessMessage) actorSystem.invoke("joe", "get", MyBusinessMessage.class);
             log.info("Actor invoke Get Actor Action value result: {}. Request Time Elapsed: {}ms",
                     getResult.getValue(), Duration.between(initialInvokeRequestTime, Instant.now()).toMillis());
         };
+            */
+
+        };
+
     }
 
 }
