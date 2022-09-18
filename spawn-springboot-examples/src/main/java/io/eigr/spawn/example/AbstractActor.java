@@ -14,7 +14,7 @@ import java.util.Optional;
         name = ActorIdentity.Abstract,
         stateType = MyState.class,
         snapshotTimeout = 10000,
-        deactivatedTimeout = 15000
+        deactivatedTimeout = 60000
 )
 public class AbstractActor {
 
