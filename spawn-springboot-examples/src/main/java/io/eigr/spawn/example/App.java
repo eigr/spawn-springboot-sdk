@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.stream.Stream;
 
 @Log4j2
 @EnableSpawn
@@ -35,8 +36,9 @@ public class App {
     @Bean
     public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
         return args -> {
+            /*
             HashMap<String, ActorOuterClass.Actor> actors = new HashMap<>();
-            for (int i = 0; i < 5000; i++) {
+            for (int i = 0; i < 60000; i++) {
                 String actorName = String.format("actor-test-%s", i);
                 actors.put(actorName, makeActor(actorName, 1));
             }
@@ -80,17 +82,31 @@ public class App {
             }
 
             Thread.sleep(5000);
-        };
+            */
 
+            SpawnSystem actorSystem = ctx.getBean(SpawnSystem.class);
 
-            /*SpawnSystem actorSystem = ctx.getBean(SpawnSystem.class);
+            for (int i = 0; i < 1000; i++) {
+                String actorName = String.format("concreteActor-%s", i);
+                log.info("Let's spawning Actor {}", actorName);
+                actorSystem.spawn(actorName, AbstractActor.class);
+            }
+
+            for (int i = 0; i < 1000; i++) {
+                String actorName = String.format("concreteActor-%s", i);
+                log.info("Let's invoke {}", actorName);
+                MyBusinessMessage input = MyBusinessMessage.newBuilder().setValue(1).build();
+                actorSystem.invoke(actorName, "sum", input, MyBusinessMessage.class);
+            }
+
+            /*
             log.info("Let's invoke some Actor");
-            for (int i = 0; i < 24000; i++) {
+            for (int i = 0; i < 50000; i++) {
                 MyBusinessMessage arg = MyBusinessMessage.newBuilder().setValue(i).build();
 
                 Instant initialInvokeRequestTime = Instant.now();
                 MyBusinessMessage sumResult =
-                        (MyBusinessMessage) actorSystem.invoke("zezinho", "sum", arg, MyBusinessMessage.class);
+                        (MyBusinessMessage) actorSystem.invoke("joe", "sum", arg, MyBusinessMessage.class);
 
                 log.info("Actor invoke Sum Actor Action value result: {}. Request Time Elapsed: {}ms",
                         sumResult.getValue(), Duration.between(initialInvokeRequestTime, Instant.now()).toMillis());
@@ -98,10 +114,13 @@ public class App {
 
             Instant initialInvokeRequestTime = Instant.now();
             MyBusinessMessage getResult =
-                    (MyBusinessMessage) actorSystem.invoke("zezinho", "get", MyBusinessMessage.class);
+                    (MyBusinessMessage) actorSystem.invoke("joe", "get", MyBusinessMessage.class);
             log.info("Actor invoke Get Actor Action value result: {}. Request Time Elapsed: {}ms",
                     getResult.getValue(), Duration.between(initialInvokeRequestTime, Instant.now()).toMillis());
-        };*/
+            */
+
+        };
+
     }
 
     private ActorOuterClass.Actor makeActor(String name, Integer state) {
