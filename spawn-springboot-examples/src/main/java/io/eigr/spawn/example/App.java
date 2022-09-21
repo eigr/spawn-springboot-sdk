@@ -11,6 +11,8 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.stream.IntStream;
 
 @Log4j2
@@ -62,10 +64,20 @@ public class App {
                 IntStream.range(0, 1000)
                         .forEach(index -> {
                             try {
+                                Instant initialInvokeRequestTime = Instant.now();
                                 log.info("Let's invoke {}", actorName);
                                 MyBusinessMessage input = MyBusinessMessage.newBuilder().setValue(1).build();
+                                MyBusinessMessage result = (MyBusinessMessage) actorSystem.invoke(actorName, "sum", input, MyBusinessMessage.class);
+                                log.info("Actor invoke Sum Actor Action value result: {}. Request Time Elapsed: {}ms",
+                                        result.getValue(), Duration.between(initialInvokeRequestTime, Instant.now()).toMillis());
 
-                                actorSystem.invoke(actorName, "sum", input, MyBusinessMessage.class);
+
+                                // Call default method "get" for get state back
+                                initialInvokeRequestTime = Instant.now();
+                                MyState getResult =
+                                        (MyState) actorSystem.invoke(actorName, "get", MyState.class);
+                                log.info("Actor invoke Get Actor Action value result: {}. Request Time Elapsed: {}ms",
+                                        getResult.getValue(), Duration.between(initialInvokeRequestTime, Instant.now()).toMillis());
                             } catch (Exception e) {
                                 throw new RuntimeException(e);
                             }

@@ -18,22 +18,6 @@ import java.util.Optional;
 )
 public class AbstractActor {
 
-    @Command
-    public Value get(ActorContext<MyState> context) {
-        log.info("Received invocation. Context: {}", context);
-        if (context.getState().isPresent()) {
-            MyState state = context.getState().get();
-            return Value.ActorValue.<MyState, MyBusinessMessage>at()
-                    .state(state)
-                    .value(MyBusinessMessage.newBuilder()
-                            .setValue(state.getValue())
-                            .build())
-                    .reply();
-        }
-        return Value.ActorValue.at()
-                .empty();
-    }
-
     @Command(name = "sum", inputType = MyBusinessMessage.class)
     public Value sum(MyBusinessMessage msg, ActorContext<MyState> context) {
         log.info("Received invocation. Message: {}. Context: {}", msg, context);
