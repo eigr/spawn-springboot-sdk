@@ -32,15 +32,15 @@ public class App {
         return args -> {
             SpawnSystem actorSystem = ctx.getBean(SpawnSystem.class);
 
-            for (int i = 0; i < 200; i++) {
+            for (int i = 0; i < 2; i++) {
                 String actorName = String.format("concreteActor-%s", i);
                 log.info("Let's spawning Actor {}", actorName);
                 actorSystem.spawn(actorName, AbstractActor.class);
             }
 
-            Thread.sleep(20000);
+            Thread.sleep(1000);
 
-            IntStream callStream = IntStream.range(0, 200);
+            IntStream callStream = IntStream.range(0, 1);
 
             /*callStream.forEach(actorIndex -> {
                 String actorName = String.format("concreteActor-%s", actorIndex);
@@ -57,32 +57,36 @@ public class App {
                             }
                         });
             });*/
-
-            callStream.parallel().forEach(actorIndex -> {
+            Instant initialInvokeRequestTime = Instant.now();
+            callStream.forEach(actorIndex -> {
                 String actorName = String.format("concreteActor-%s", actorIndex);
 
-                IntStream.range(0, 1000)
+                IntStream.range(0, 2000)
                         .forEach(index -> {
                             try {
-                                Instant initialInvokeRequestTime = Instant.now();
-                                log.info("Let's invoke {}", actorName);
+                                //Instant initialInvokeRequestTime = Instant.now();
+                                //log.info("Let's invoke {}", actorName);
                                 MyBusinessMessage input = MyBusinessMessage.newBuilder().setValue(1).build();
                                 MyBusinessMessage result = (MyBusinessMessage) actorSystem.invoke(actorName, "sum", input, MyBusinessMessage.class);
-                                log.info("Actor invoke Sum Actor Action value result: {}. Request Time Elapsed: {}ms",
-                                        result.getValue(), Duration.between(initialInvokeRequestTime, Instant.now()).toMillis());
+                                //log.info("Actor invoke Sum Actor Action value result: {}. Request Time Elapsed: {}ms",
+                                //        result.getValue(), Duration.between(initialInvokeRequestTime, Instant.now()).toMillis());
 
 
                                 // Call default method "get" for get state back
-                                initialInvokeRequestTime = Instant.now();
-                                MyState getResult =
+                                //initialInvokeRequestTime = Instant.now();
+                                /*MyState getResult =
                                         (MyState) actorSystem.invoke(actorName, "get", MyState.class);
                                 log.info("Actor invoke Get Actor Action value result: {}. Request Time Elapsed: {}ms",
                                         getResult.getValue(), Duration.between(initialInvokeRequestTime, Instant.now()).toMillis());
+
+                                 */
                             } catch (Exception e) {
                                 throw new RuntimeException(e);
                             }
                         });
             });
+            log.info("Actor Invocations {} interactions in Request Time Elapsed: {}ms",
+                            2000, Duration.between(initialInvokeRequestTime, Instant.now()));
 
             /*
             log.info("Let's invoke some Actor");
