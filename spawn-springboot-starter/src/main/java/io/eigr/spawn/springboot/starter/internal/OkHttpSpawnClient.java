@@ -71,11 +71,6 @@ public class OkHttpSpawnClient implements SpawnClient {
         }
     }
 
-    @PreDestroy
-    public void destroy() {
-        socketFile.delete();
-    }
-
     @Override
     @Retryable(value = ConnectException.class,
             maxAttemptsExpression = "${retry.maxAttempts}", backoff = @Backoff(delayExpression = "${retry.maxDelay}"))
