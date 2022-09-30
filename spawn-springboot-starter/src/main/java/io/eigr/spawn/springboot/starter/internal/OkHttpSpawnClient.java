@@ -13,7 +13,6 @@ import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -32,7 +31,7 @@ public class OkHttpSpawnClient implements SpawnClient {
     private static final Logger log = LoggerFactory.getLogger(OkHttpSpawnClient.class);
     private static final String SPAWN_REGISTER_URI = "/api/v1/system";
 
-    private static final String SPAWN_ACTOR_SPAWN = "/api/v1/system/%S/actors/spawn";
+    private static final String SPAWN_ACTOR_SPAWN = "/api/v1/system/%s/actors/spawn";
 
     @Value("${io.eigr.spawn.springboot.starter.proxyUdsEnable}")
     private boolean isUdsEnable;
@@ -49,19 +48,19 @@ public class OkHttpSpawnClient implements SpawnClient {
 
     @PostConstruct
     public void setup() throws IOException {
-        FileAttribute<Set<PosixFilePermission>> rwx =
-                PosixFilePermissions.asFileAttribute(
-                        PosixFilePermissions.fromString("rwxrwxrwx"));
-
-        Path path = Paths.get(udsSocketFilePath);
-        if (!path.toFile().exists()) {
-            socketFile = Files.createFile(path, rwx).toFile();
-
-        } else {
-            socketFile = path.toFile();
-        }
-
         if (isUdsEnable) {
+            FileAttribute<Set<PosixFilePermission>> rwx =
+                    PosixFilePermissions.asFileAttribute(
+                            PosixFilePermissions.fromString("rwxrwxrwx"));
+
+            Path path = Paths.get(udsSocketFilePath);
+            if (!path.toFile().exists()) {
+                socketFile = Files.createFile(path, rwx).toFile();
+
+            } else {
+                socketFile = path.toFile();
+            }
+
             this.client = new OkHttpClient.Builder()
                     .socketFactory(new UnixDomainSocketFactory(socketFile))
                     .protocols(Arrays.asList(okhttp3.Protocol.HTTP_1_1))

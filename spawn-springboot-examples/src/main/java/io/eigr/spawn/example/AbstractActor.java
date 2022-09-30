@@ -13,8 +13,8 @@ import java.util.Optional;
 @ActorEntity(
         name = ActorIdentity.Abstract,
         stateType = MyState.class,
-        snapshotTimeout = 10000,
-        deactivatedTimeout = 60000
+        snapshotTimeout = 5000,
+        deactivatedTimeout = 10000
 )
 public class AbstractActor {
 

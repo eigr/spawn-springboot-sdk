@@ -61,7 +61,7 @@ public class App {
             callStream.forEach(actorIndex -> {
                 String actorName = String.format("concreteActor-%s", actorIndex);
 
-                IntStream.range(0, 2000)
+                IntStream.range(0, 60000)
                         .forEach(index -> {
                             try {
                                 //Instant initialInvokeRequestTime = Instant.now();
@@ -74,9 +74,9 @@ public class App {
 
                                 // Call default method "get" for get state back
                                 //initialInvokeRequestTime = Instant.now();
-                                /*MyState getResult =
+                                MyState getResult =
                                         (MyState) actorSystem.invoke(actorName, "get", MyState.class);
-                                log.info("Actor invoke Get Actor Action value result: {}. Request Time Elapsed: {}ms",
+                                /*log.info("Actor invoke Get Actor Action value result: {}. Request Time Elapsed: {}ms",
                                         getResult.getValue(), Duration.between(initialInvokeRequestTime, Instant.now()).toMillis());
 
                                  */

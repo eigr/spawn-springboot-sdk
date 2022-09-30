@@ -185,7 +185,10 @@ public class SpawnActorController {
             case ACTOR_NOT_FOUND:
                 throw new ActorNotFoundException();
             case OK:
-                return outputType.cast(resp.getValue().unpack(outputType));
+                if (resp.hasValue() && Objects.nonNull(resp.getValue())) {
+                    return outputType.cast(resp.getValue().unpack(outputType));
+                }
+                return null;
         }
 
         throw new ActorNotFoundException();
