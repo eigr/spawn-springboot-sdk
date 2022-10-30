@@ -8,6 +8,17 @@ native Actor model.
 
 For a broader understanding of Spawn please consult its official [repository](https://github.com/eigr-labs/spawn).
 
+## Installation
+
+To proceed, create a container and send it to a container registry that will be accessible via Kubernetes in the future. This can be done by executing the following command in the application directory via terminal:
+
+```
+mvn install
+```
+
+This command will compile the maven application, and thanks to the jib Maven plugin, it will also publish the container image in your docker hub registry :)
+
+
 ## How to use
 
 First add the following settings to your `pom.xml` file:
