@@ -9,7 +9,12 @@ import lombok.extern.log4j.Log4j2;
 import java.util.Optional;
 
 @Log4j2
-@ActorEntity(name = "joe", stateType = MyState.class, snapshotTimeout = 5000, deactivatedTimeout = 10000)
+@ActorEntity(
+        name = "joe",
+        stateType = MyState.class,
+        snapshotTimeout = 5000,
+        deactivatedTimeout = 10000
+)
 public class JoeActor {
     @Command
     public Value get(ActorContext<MyState> context) {

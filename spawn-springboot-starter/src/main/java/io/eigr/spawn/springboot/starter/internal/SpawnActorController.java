@@ -49,7 +49,7 @@ public class SpawnActorController {
     public void register() throws Exception {
         Map<String, ActorOuterClass.Actor> realActors = new HashMap<>();
         for (Map.Entry<String, ActorOuterClass.Actor> actor : actors.entrySet()) {
-            if (!actor.getValue().getName().equalsIgnoreCase(ActorIdentity.Abstract)) {
+            if (!actor.getValue().getId().getName().equalsIgnoreCase(ActorIdentity.Abstract)) {
                 realActors.put(actor.getKey(), actor.getValue());
             }
         }
@@ -122,7 +122,7 @@ public class SpawnActorController {
     }
 
     public Value callAction(String system, String actor, String commandName, Any value, Protocol.Context context) {
-        if (actors.containsKey(actor)) {
+        //if (actors.containsKey(actor)) {
             Optional<Entity> optionalEntity = getEntityByActor(actor);
             if (optionalEntity.isPresent()) {
                 try {
@@ -154,15 +154,20 @@ public class SpawnActorController {
                     throw new RuntimeException(e);
                 }
             }
-        }
-        throw new ActorNotFoundException();
+        //}
+        //throw new ActorNotFoundException();
+        return null;
     }
 
     private <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invokeActor(String actor, String cmd, S value, Class<T> outputType) throws Exception {
         Objects.requireNonNull(actorSystem, "ActorSystem not initialized!");
 
         final ActorOuterClass.Actor actorRef = ActorOuterClass.Actor.newBuilder()
-                .setName(actor)
+                .setId(
+                        ActorOuterClass.ActorId.newBuilder()
+                                .setName(actor)
+                                .build()
+                )
                 .build();
 
         Any stateValue = Any.pack(value);
@@ -198,39 +203,75 @@ public class SpawnActorController {
     private Map<String, ActorOuterClass.Actor> getActors(List<Entity> entities) {
         return entities.stream().map(actor -> {
 
-            ActorOuterClass.ActorSnapshotStrategy snapshotStrategy = ActorOuterClass.ActorSnapshotStrategy.newBuilder()
-                    .setTimeout(ActorOuterClass.TimeoutStrategy.newBuilder().setTimeout(actor.getSnapshotTimeout()).build())
+            ActorOuterClass.ActorSnapshotStrategy snapshotStrategy =
+                    ActorOuterClass.ActorSnapshotStrategy.newBuilder()
+                    .setTimeout(
+                            ActorOuterClass.TimeoutStrategy.newBuilder()
+                                    .setTimeout(actor.getSnapshotTimeout())
+                                    .build()
+                    )
                     .build();
 
-            ActorOuterClass.ActorDeactivateStrategy deactivateStrategy = ActorOuterClass.ActorDeactivateStrategy.newBuilder()
-                    .setTimeout(ActorOuterClass.TimeoutStrategy.newBuilder().setTimeout(actor.getDeactivateTimeout()).build())
+            ActorOuterClass.ActorDeactivationStrategy deactivateStrategy =
+                    ActorOuterClass.ActorDeactivationStrategy.newBuilder()
+                    .setTimeout(
+                            ActorOuterClass.TimeoutStrategy.newBuilder()
+                                    .setTimeout(actor.getDeactivateTimeout())
+                                    .build()
+                    )
+                    .build();
+
+            ActorOuterClass.ActorSettings settings = ActorOuterClass.ActorSettings.newBuilder()
+                    .setPersistent(actor.isPersistent())
+                    .setSnapshotStrategy(snapshotStrategy)
+                    .setDeactivationStrategy(deactivateStrategy)
                     .build();
 
             return ActorOuterClass.Actor.newBuilder()
-                    .setName(actor.getActorName())
-                    .setPersistent(actor.isPersistent())
-                    .setSnapshotStrategy(snapshotStrategy)
-                    .setDeactivateStrategy(deactivateStrategy)
+                    .setId(
+                            ActorOuterClass.ActorId.newBuilder()
+                                    .setName(actor.getActorName())
+                                    .build()
+                    )
+                    .setSettings(settings)
                     .setState(ActorOuterClass.ActorState.newBuilder().build()) // Init with empty state
                     .build();
 
-        }).collect(Collectors.toMap(ActorOuterClass.Actor::getName, Function.identity()));
+        }).collect(Collectors.toMap(actor -> actor.getId().getName(), Function.identity()));
     }
 
     private ActorOuterClass.Actor getActor(Entity entity) {
-        ActorOuterClass.ActorSnapshotStrategy snapshotStrategy = ActorOuterClass.ActorSnapshotStrategy.newBuilder()
-                .setTimeout(ActorOuterClass.TimeoutStrategy.newBuilder().setTimeout(entity.getSnapshotTimeout()).build())
+        ActorOuterClass.ActorSnapshotStrategy snapshotStrategy =
+                ActorOuterClass.ActorSnapshotStrategy.newBuilder()
+                .setTimeout(
+                        ActorOuterClass.TimeoutStrategy.newBuilder()
+                                .setTimeout(entity.getSnapshotTimeout())
+                                .build()
+                )
                 .build();
 
-        ActorOuterClass.ActorDeactivateStrategy deactivateStrategy = ActorOuterClass.ActorDeactivateStrategy.newBuilder()
-                .setTimeout(ActorOuterClass.TimeoutStrategy.newBuilder().setTimeout(entity.getDeactivateTimeout()).build())
+        ActorOuterClass.ActorDeactivationStrategy deactivateStrategy =
+                ActorOuterClass.ActorDeactivationStrategy.newBuilder()
+                .setTimeout(
+                        ActorOuterClass.TimeoutStrategy.newBuilder()
+                                .setTimeout(entity.getDeactivateTimeout())
+                                .build()
+                )
+                .build();
+
+        ActorOuterClass.ActorSettings settings = ActorOuterClass.ActorSettings.newBuilder()
+                .setPersistent(entity.isPersistent())
+                .setSnapshotStrategy(snapshotStrategy)
+                .setDeactivationStrategy(deactivateStrategy)
                 .build();
 
         return ActorOuterClass.Actor.newBuilder()
-                .setName(entity.getActorName())
-                .setPersistent(entity.isPersistent())
-                .setSnapshotStrategy(snapshotStrategy)
-                .setDeactivateStrategy(deactivateStrategy)
+                .setId(
+                        ActorOuterClass.ActorId.newBuilder()
+                                .setName(entity.getActorName())
+                                .build()
+                )
+                .setSettings(settings)
                 .setState(ActorOuterClass.ActorState.newBuilder().build())
                 .build();
     }

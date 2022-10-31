@@ -118,7 +118,7 @@ public class OkHttpSpawnClient implements SpawnClient {
                 request.toByteArray(), MediaType.parse(SPAWN_MEDIA_TYPE));
 
         Request invocationRequest = new Request.Builder()
-                .url(makeURLForSystemAndActor(request.getSystem().getName(), request.getActor().getName()))
+                .url(makeURLForSystemAndActor(request.getSystem().getName(), request.getActor().getId().getName()))
                 .post(body)
                 .build();
 

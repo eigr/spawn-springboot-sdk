@@ -23,11 +23,66 @@
 //
 // The general flow of a registration action is as follows:
 //
+//╔═══════════════════╗                  ╔═══════════════════╗                  ╔═══════════════════╗
+//║   User Function   ║                  ║Local Spawn Sidecar║                  ║       Actor       ║
+//╚═══════════════════╝                  ╚═══════════════════╝                  ╚═══════════════════╝
+//          ║                                      ║                                      ║
+//          ║                                      ║                                      ║
+//          ║              HTTP POST               ║                                      ║
+//          ║            Registration              ║                                      ║
+//          ║               Request                ║                                      ║
+//          ╠─────────────────────────────────────▶║                                      ║
+//          ║                                      ║       Upfront start Actors with      ║
+//          ║                                      ╠───────BEAM Distributed Protocol─────▶║
+//          ║                                      ║                                      ║
+//          ║                                      ║                                      ╠───┐Initialize
+//          ║                                      ║                                      ║   │  State
+//          ║                                      ║                                      ║   │  Store
+//          ║                                      ║                                      ║◀──┘
+//          ║           HTTP Registration          ║                                      ║
+//          ║               Response               ║                                      ║
+//          ║◀─────────────────────────────────────╣                                      ║
+//          ║                                      ║                                      ║
+//          ║                                      ║                                      ║
+//          ║                                      ║                                      ║
+//          ║                                      ║                                      ║
+//          ║                                      ║                                      ║
+//          ║                                      ║                                      ║
+//          ║                                      ║                                      ║
+//          ║                                      ║                                      ║
+//
+//     ███████████                            ███████████                            ███████████
+//
+//
+// ## Spawning Actors
+//
+// Actors are usually created at the beginning of the SDK's communication flow with the Proxy by the registration step described above.
+// However, some use cases require that Actors can be created ***on the fly***.
+// In other words, Spawn is used to bring to life Actors previously registered as Abstracts, giving them a name and thus creating a concrete instance
+// at runtime for that Actor. Actors created with the Spawn feature are generally used when you want to share a behavior while maintaining
+// the isolation characteristics of the actors.
+// For these situations we have the Spawning flow described below.
+//
+// A user function that wants to Spawning new Actors in Proxy Spawn must proceed by making a POST request to the following endpoint:
+//
+// ```
+// POST /system/:system_name/actors/spawn HTTP 1.1
+// HOST: localhost
+// User-Agent: user-function-client/0.1.0 (this is just example)
+// Accept: application/octet-stream
+// Content-Type: application/octet-stream
+//
+// SpawnRequest type bytes encoded here :-)
+// ```
+//
+// The general flow of a Spawning Actors is as follows:
+//
+// ```
 // +----------------+                                     +---------------------+                                     +-------+
 // | User Function  |                                     | Local Spawn Sidecar |                                     | Actor |
 // +----------------+                                     +---------------------+                                     +-------+
 //         |                                                       |                                                     |
-//         | HTTP POST Registration Request                        |                                                     |
+//         | HTTP POST SpawnRequest                                |                                                     |
 //         |------------------------------------------------------>|                                                     |
 //         |                                                       |                                                     |
 //         |                                                       | Upfront start Actors with BEAM Distributed Protocol |
@@ -38,13 +93,13 @@
 //         |                                                       |                                                     |                     |
 //         |                                                       |                                                     |<---------------------
 //         |                                                       |                                                     |
-//         |          HTTP Registration Response                   |                                                     |
+//         |          HTTP SpawnResponse                           |                                                     |
 //         |<------------------------------------------------------|                                                     |
 //         |                                                       |                                                     |
-//
+// ```
 //
 // Once the system has been initialized, that is, the registration step has been successfully completed,
-// then the user role will be able to make requests to the System Actors.
+// then the user function will be able to make requests to the System Actors.
 // This is done through a post request to the Proxy at the `/system/:name/actors/:actor_name/invoke` endpoint.
 //
 // A user function that wants to call actors in Proxy Spawn must proceed by making a POST request as the follow:
@@ -59,40 +114,43 @@
 // invocation request type bytes encoded here :-)
 // `
 //
-// Assuming that two user roles were registered in different separate Proxies, the above request would go the following way:
+// Assuming that two user functions were registered in different separate Proxies, the above request would go the following way:
 //
-// +-----------------+                       +------------------------+       +------------------------+                                         +--------------------------------+
-// | User Function A |                       | Local Spawn Sidecar A  |       | Remote User Function B |                                         | Remote Spawn Sidecar / Actor B |
-// +-----------------+                       +------------------------+       +------------------------+                                         +--------------------------------+
-//         |                                             |                                |                                                                     |
-//         | HTTP POST Invocation Request.               |                                |                                                                     |
-//         |-------------------------------------------->|                                |                                                                     |
-//         |                                             |                                |                                                                     |
-//         |                                             | Lookup for Actor               |                                                                     |
-//         |                                             |-----------------               |                                                                     |
-//         |                                             |                |               |                                                                     |
-//         |                                             |<----------------               |                                                                     |
-//         |                                             |                                |                                                                     |
-//         |                                             | Make a BEAM Distributed Protocol Call on Actor located at proxy b                                    |
-//         |                                             |----------------------------------------------------------------------------------------------------->|
-//         |                                             |                                |                                                                     |
-//         |                                             |                                |                        Make HTTP POST in /api/v1/actors/actions     |
-//         |                                             |                                |<--------------------------------------------------------------------|
-//         |                                             |                                |                                                                     |
-//         |                                             |                                | Handle request, execute command                                     |
-//         |                                             |                                |--------------------------------                                     |
-//         |                                             |                                |                               |                                     |
-//         |                                             |                                |<-------------------------------                                     |
-//         |                                             |                                |                                                                     |
-//         |                                             |                                | HTTP Reply with the result and the new state of actor B             |
-//         |                                             |                                |-------------------------------------------------------------------->|
-//         |                                             |                                |                                                                     |
-//         |                                             |                 Receive response, store new state, and return result value to original caller        |
-//         |                                             |<-----------------------------------------------------------------------------------------------------|
-//         |                                             |                                |                                                                     |
-//         |              Respond to user                |                                |                                                                     |
-//         |<--------------------------------------------|                                |                                                                     |
-//         |                                             |                                |                                                                     |
+//╔═══════════════════╗                  ╔═══════════════════╗              ╔═════════════════════════╗        ╔═════════════════════════════╗
+//║   User Function   ║                  ║Local Spawn Sidecar║              ║ Remote User Function B  ║        ║Remote Spawn Sidecar/Actor B ║
+//╚═══════════════════╝                  ╚═══════════════════╝              ╚═════════════════════════╝        ╚═════════════════════════════╝
+//          ║              HTTP POST               ║                                     ║                                    ║
+//          ║            Registration              ║                                     ║                                    ║
+//          ║               Request                ║                                     ║                                    ║
+//          ╠─────────────────────────────────────▶║                                     ║                                    ║
+//          ║                                      ╠───┐                                 ║                                    ║
+//          ║                                      ║   │Lookup for                       ║                                    ║
+//          ║                                      ║   │  Actor                          ║                                    ║
+//          ║                                      ║◀──┘                                 ║                                    ║
+//          ║                                      ║                                     ║           BEAM Distributed         ║
+//          ║                                      ╠─────────────────────────────────────╬────────────protocol call──────────▶║
+//          ║                                      ║                                     ║                                    ║
+//          ║                                      ║                                     ║             HTTP POST:             ║
+//          ║                                      ║                                     ║◀──────/api/v1/actors/actions───────╣
+//          ║                                      ║                                     ║                                    ║
+//          ║                                      ║                                     ╠───┐                                ║
+//          ║                                      ║                                     ║   │Handle request,                 ║
+//          ║                                      ║                                     ║   │execute command                 ║
+//          ║                                      ║                                     ║◀──┘                                ║
+//          ║                                      ║                                     ║            Reply with the          ║
+//          ║                                      ║                                     ╠────────────result and the ────────▶║
+//          ║                                      ║                                     ║             new state of           ║────┐
+//          ║                                      ║                                     ║                                    ║    │
+//          ║                                      ║                                     ║                                    ║    │Store new State
+//          ║                                      ║       Send response to the          ║                                    ║ ◀──┘
+//          ║         Respond to user with         ║◀─────────Spawn Sidecar A────────────╬────────────────────────────────────╣
+//          ║             result value             ║                                     ║                                    ║
+//          ║◀─────────────────────────────────────╣                                     ║                                    ║
+//          ║                                      ║                                     ║                                    ║
+//          ║                                      ║                                     ║                                    ║
+//
+//     ███████████                           ████████████                           ███████████                          ███████████
+//
 //
 syntax = "proto3";
 
@@ -104,19 +162,42 @@ import "google/protobuf/any.proto";
 option java_package = "io.eigr.functions.protocol";
 option go_package = "github.com/eigr/go-support/eigr/protocol;protocol";
 
-message SpawnRequest {
-    eigr.functions.protocol.actors.ActorSystem actor_system = 2;
+// Context is where current and/or updated state is stored
+// to be transmitted to/from proxy and user function
+//
+// Params:
+//   * state: Actor state passed back and forth between proxy and user function.
+//   * caller: ActorId of who is calling target actor
+//   * self: ActorId of itself
+message Context {
+
+    google.protobuf.Any state = 1;
+
+    // Who is calling target actor
+    eigr.functions.protocol.actors.ActorId caller = 2;
+
+    // The target actor itself
+    eigr.functions.protocol.actors.ActorId self = 3;
 }
 
-message SpawnResponse {
-    RequestStatus status = 1;
-}
+// Noop is used when the input or output value of a function or method
+// does not matter to the caller of a Workflow or when the user just wants to receive
+// the Context in the request, that is,
+// he does not care about the input value only with the state.
+message Noop {}
 
 message RegistrationRequest {
 
     ServiceInfo service_info = 1;
 
     eigr.functions.protocol.actors.ActorSystem actor_system = 2;
+}
+
+message RegistrationResponse {
+
+    RequestStatus status = 1;
+
+    ProxyInfo proxy_info = 2;
 }
 
 message ServiceInfo {
@@ -145,6 +226,14 @@ message ServiceInfo {
     int32 protocol_minor_version = 7;
 }
 
+message SpawnRequest {
+    eigr.functions.protocol.actors.ActorSystem actor_system = 2;
+}
+
+message SpawnResponse {
+    RequestStatus status = 1;
+}
+
 message ProxyInfo {
 
     int32 protocol_major_version = 1;
@@ -156,21 +245,69 @@ message ProxyInfo {
     string proxy_version = 4;
 }
 
-message RegistrationResponse {
-
-    RequestStatus status = 1;
-
-    ProxyInfo proxy_info = 2;
+// When a Host Function is invoked it returns the updated state and return value to the call.
+// It can also return a number of side effects to other Actors as a result of its computation.
+// These side effects will be forwarded to the respective Actors asynchronously and should not affect the Host Function's response to its caller.
+// Internally side effects is just a special kind of InvocationRequest.
+// Useful for handle handle `recipient list` and `Composed Message Processor` patterns:
+// https://www.enterpriseintegrationpatterns.com/patterns/messaging/RecipientList.html
+// https://www.enterpriseintegrationpatterns.com/patterns/messaging/DistributionAggregate.html
+message SideEffect {
+    InvocationRequest request = 1;
 }
 
-// Context is where current and/or updated state is stored
-// to be transmitted to/from proxy and user function
-//
-// Params:
-//   * state: Actor state passed back and forth between proxy and user function.
-message Context {
+// Broadcast a message to many Actors
+// Useful for handle `recipient list`, `publish-subscribe channel`, and `scatter-gatther` patterns:
+// https://www.enterpriseintegrationpatterns.com/patterns/messaging/RecipientList.html
+// https://www.enterpriseintegrationpatterns.com/patterns/messaging/PublishSubscribeChannel.html
+// https://www.enterpriseintegrationpatterns.com/patterns/messaging/BroadcastAggregate.html
+message Broadcast {
+    // Channel of target Actors
+    string channel_group = 1;
 
-    google.protobuf.Any state = 1;
+    // Command. Only Actors that have this command will run successfully
+    string command_name = 2;
+
+    // Payload
+    oneof payload {
+        google.protobuf.Any value = 3;
+        Noop noop = 4;
+    }
+}
+
+// Sends the output of a command of an Actor to the input of another command of an Actor
+// Useful for handle `pipes` pattern:
+// https://www.enterpriseintegrationpatterns.com/patterns/messaging/PipesAndFilters.html
+message Pipe {
+    // Target Actor
+    string actor = 1;
+
+    // Command.
+    string command_name = 2;
+}
+
+// Sends the input of a command of an Actor to the input of another command of an Actor
+// Useful for handle `content-basead router` pattern
+// https://www.enterpriseintegrationpatterns.com/patterns/messaging/ContentBasedRouter.html
+message Forward {
+    // Target Actor
+    string actor = 1;
+
+    // Command.
+    string command_name = 2;
+}
+
+// Container for archicetural message patterns
+message Workflow {
+
+    Broadcast broadcast = 2;
+
+    repeated SideEffect effects = 1;
+
+    oneof routing {
+        Pipe pipe = 3;
+        Forward forward = 4;
+    }
 }
 
 // The user function when it wants to send a message to an Actor uses the InvocationRequest message type.
@@ -178,6 +315,7 @@ message Context {
 // Params:
 //   * system: See ActorStstem message.
 //   * actor: The target Actor, i.e. the one that the user function is calling to perform some computation.
+//   * caller: The caller Actor
 //   * command_name: The function or method on the target Actor that will receive this request
 //     and perform some useful computation with the sent data.
 //   * value: This is the value sent by the user function to be computed by the request's target Actor command.
@@ -185,15 +323,20 @@ message Context {
 //            or whether the command should be processed asynchronously, i.e. no response sent to the caller and no waiting.
 message InvocationRequest {
 
-    eigr.functions.protocol.actors.ActorSystem system =1;
+    eigr.functions.protocol.actors.ActorSystem system = 1;
 
     eigr.functions.protocol.actors.Actor actor = 2;
 
     string command_name = 3;
 
-    google.protobuf.Any value = 4;
+    oneof payload {
+        google.protobuf.Any value = 4;
+        Noop noop = 7;
+    }
 
     bool async = 5;
+
+    eigr.functions.protocol.actors.ActorId caller = 6;
 }
 
 // ActorInvocation is a translation message between a local invocation made via InvocationRequest
@@ -218,7 +361,12 @@ message ActorInvocation {
 
     Context current_context = 4;
 
-    google.protobuf.Any value = 5;
+    oneof payload {
+        google.protobuf.Any value = 5;
+        Noop noop = 7;
+    }
+
+    eigr.functions.protocol.actors.ActorId caller = 6;
 }
 
 // The user function's response after executing the action originated by the local proxy request via ActorInvocation.
@@ -237,14 +385,19 @@ message ActorInvocationResponse {
 
     Context updated_context = 3;
 
-    google.protobuf.Any value = 4;
+    oneof payload {
+        google.protobuf.Any value = 4;
+        Noop noop = 6;
+    }
+
+    Workflow workflow = 5;
 }
 
 // InvocationResponse is the response that the proxy that received the InvocationRequest request will forward to the request's original user function.
 //
 // Params:
 //   status: Status of request. Could be one of [UNKNOWN, OK, ACTOR_NOT_FOUND, ERROR].
-//   sytem: The original ActorSystem of the InvocationRequest request.
+//   system: The original ActorSystem of the InvocationRequest request.
 //   actor: The target Actor originally sent in the InvocationRequest message.
 //   value: The value resulting from the request processing that the target Actor made.
 //          This value must be passed by the user function to the one who requested the initial request in InvocationRequest.
@@ -256,7 +409,10 @@ message InvocationResponse {
 
     eigr.functions.protocol.actors.Actor actor = 3;
 
-    google.protobuf.Any value = 4;
+    oneof payload {
+        google.protobuf.Any value = 4;
+        Noop noop = 5;
+    }
 }
 
 enum Status {
@@ -276,3 +432,4 @@ message RequestStatus {
 
     string message = 2;
 }
+

@@ -154,20 +154,38 @@ public class SpawnTest {
                 .setState(stateValue)
                 .build();
 
-        ActorOuterClass.ActorSnapshotStrategy snapshotStrategy = ActorOuterClass.ActorSnapshotStrategy.newBuilder()
-                .setTimeout(ActorOuterClass.TimeoutStrategy.newBuilder().setTimeout(10000).build())
+        ActorOuterClass.ActorSnapshotStrategy snapshotStrategy =
+                ActorOuterClass.ActorSnapshotStrategy.newBuilder()
+                .setTimeout(
+                        ActorOuterClass.TimeoutStrategy.newBuilder()
+                                .setTimeout(10000)
+                                .build()
+                )
                 .build();
 
-        ActorOuterClass.ActorDeactivateStrategy deactivateStrategy = ActorOuterClass.ActorDeactivateStrategy.newBuilder()
-                .setTimeout(ActorOuterClass.TimeoutStrategy.newBuilder().setTimeout(60000).build())
+        ActorOuterClass.ActorDeactivationStrategy deactivationStrategy =
+                ActorOuterClass.ActorDeactivationStrategy.newBuilder()
+                .setTimeout(
+                        ActorOuterClass.TimeoutStrategy.newBuilder()
+                                .setTimeout(60000)
+                                .build()
+                )
+                .build();
+
+        ActorOuterClass.ActorSettings settings = ActorOuterClass.ActorSettings.newBuilder()
+                .setPersistent(true)
+                .setSnapshotStrategy(snapshotStrategy)
+                .setDeactivationStrategy(deactivationStrategy)
                 .build();
 
         return ActorOuterClass.Actor.newBuilder()
-                .setName(name)
-                .setPersistent(true)
+                .setId(
+                        ActorOuterClass.ActorId.newBuilder()
+                                .setName(name)
+                                .build()
+                )
+                .setSettings(settings)
                 .setState(initialState)
-                .setSnapshotStrategy(snapshotStrategy)
-                .setDeactivateStrategy(deactivateStrategy)
                 .build();
     }
 
