@@ -1,8 +1,9 @@
 package io.eigr.spawn.springboot.starter.internal;
 
 import io.eigr.spawn.springboot.starter.ActorIdentity;
+import io.eigr.spawn.springboot.starter.annotations.Action;
 import io.eigr.spawn.springboot.starter.annotations.ActorEntity;
-import io.eigr.spawn.springboot.starter.annotations.Command;
+import io.eigr.spawn.springboot.starter.annotations.TimerAction;
 import io.eigr.spawn.springboot.starter.autoconfigure.SpawnProperties;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
@@ -72,42 +73,81 @@ public final class ActorClassGraphEntityScan implements EntityScan {
             long deactivateTimeout = actor.deactivatedTimeout();
             long snapshotTimeout = actor.snapshotTimeout();
             String actorBeanName = entity.getSimpleName();
-            boolean isPersistent = actor.persistent();
+            boolean isStateful = actor.stateful();
             Class stateType = actor.stateType();
 
             String actorName;
-            if ((!Objects.isNull(actor.name()) || !actor.name().isEmpty()
-                    && !actor.name().equalsIgnoreCase(ActorIdentity.Abstract))) {
+            if (!Objects.isNull(actor.name()) || !actor.name().isEmpty()) {
                 actorName = actor.name();
             } else {
                 actorName = actorBeanName;
             }
 
-            final Map<String, Entity.EntityMethod> commands = new HashMap<>();
+            final Map<String, Entity.EntityMethod> actions = new HashMap<>();
+            final Map<String, Entity.EntityMethod> timerActions = new HashMap<>();
             for (Method method : entity.getDeclaredMethods()) {
 
-                if (method.isAnnotationPresent(Command.class)) {
-                    Command cmd = method.getAnnotation(Command.class);
+                if (method.isAnnotationPresent(Action.class)) {
+                    Action act = method.getAnnotation(Action.class);
                     try {
                         method.setAccessible(true);
                         String methodName = method.getName();
                         String commandName = (
-                                (!cmd.name().equalsIgnoreCase("")) ? cmd.name() : methodName
+                                (!act.name().equalsIgnoreCase("")) ? act.name() : methodName
                         );
                         Class<?> inputType = (
-                                !cmd.inputType().isAssignableFrom(Command.Default.class) ? cmd.inputType() :
+                                !act.inputType().isAssignableFrom(Action.Default.class) ? act.inputType() :
                                         method.getParameterTypes()[0]
                         );
                         Class<?> outputType = (
-                                !cmd.outputType().isAssignableFrom(Command.Default.class) ? cmd.outputType() :
+                                !act.outputType().isAssignableFrom(Action.Default.class) ? act.outputType() :
                                         method.getReturnType()
                         );
 
-                        Entity.EntityMethod command = new Entity.EntityMethod(commandName, method, inputType, outputType);
+                        Entity.EntityMethod action = new Entity.EntityMethod(
+                                commandName,
+                                Entity.EntityMethodType.DIRECT,
+                                0,
+                                method,
+                                inputType,
+                                outputType
+                        );
 
-                        commands.put(commandName, command);
+                        actions.put(commandName, action);
                     } catch (SecurityException e) {
-                        log.error("Failure on load Actor Command", e);
+                        log.error("Failure on load Actor Action", e);
+                    }
+                }
+
+                if (method.isAnnotationPresent(TimerAction.class)) {
+                    TimerAction act = method.getAnnotation(TimerAction.class);
+                    try {
+                        method.setAccessible(true);
+                        String methodName = method.getName();
+                        String actionName = (
+                                (!act.name().equalsIgnoreCase("")) ? act.name() : methodName
+                        );
+                        Class<?> inputType = (
+                                !act.inputType().isAssignableFrom(TimerAction.Default.class) ? act.inputType() :
+                                        method.getParameterTypes()[0]
+                        );
+                        Class<?> outputType = (
+                                !act.outputType().isAssignableFrom(TimerAction.Default.class) ? act.outputType() :
+                                        method.getReturnType()
+                        );
+
+                        Entity.EntityMethod timerAction = new Entity.EntityMethod(
+                                actionName,
+                                Entity.EntityMethodType.TIMER,
+                                act.period(),
+                                method,
+                                inputType,
+                                outputType
+                        );
+
+                        timerActions.put(actionName, timerAction);
+                    } catch (SecurityException e) {
+                        log.error("Failure on load Actor Action", e);
                     }
                 }
             }
@@ -117,10 +157,11 @@ public final class ActorClassGraphEntityScan implements EntityScan {
                     entity,
                     stateType,
                     actorBeanName,
-                    isPersistent,
+                    isStateful,
                     deactivateTimeout,
                     snapshotTimeout,
-                    commands);
+                    actions,
+                    timerActions);
 
             log.info("Registering Actor: {}", actorName);
             log.debug("Registering Entity -> {}", entityType);

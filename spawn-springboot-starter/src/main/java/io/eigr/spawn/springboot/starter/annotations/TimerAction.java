@@ -4,19 +4,22 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
 @SpawnAnnotation
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Command {
+public @interface TimerAction {
 
     /**
-     * The name of the command to handle.
+     * The name of the action to handle.
      *
      * <p>If not specified, the name of the method will be used as the command name.
      *
-     * @return The command name.
+     * @return The action name.
      */
     String name() default "";
+
+    int period() default 0;
 
     /**
      * * The input type.
@@ -30,5 +33,5 @@ public @interface Command {
 
     Class<?> outputType() default Default.class;
 
-    public class Default {}
+    class Default {}
 }

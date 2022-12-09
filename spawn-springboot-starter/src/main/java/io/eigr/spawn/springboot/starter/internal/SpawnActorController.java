@@ -95,18 +95,13 @@ public class SpawnActorController {
                 this.entities.add(entity);
             }
 
-            ActorOuterClass.Registry registry = ActorOuterClass.Registry.newBuilder()
-                    .putAllActors(actors)
-                    .build();
-
-            actorSystem = ActorOuterClass.ActorSystem.newBuilder()
-                    .setName(spawnProperties.getActorSystem())
-                    .setRegistry(registry)
-                    .build();
-
+            List<ActorOuterClass.ActorId> ids = actors
+                    .entrySet()
+                    .stream()
+                    .map(v -> v.getValue().getId()).collect(Collectors.toList());
 
             Protocol.SpawnRequest registration = Protocol.SpawnRequest.newBuilder()
-                    .setActorSystem(actorSystem)
+                    .addAllActors(ids)
                     .build();
 
             client.spawn(registration);
@@ -122,13 +117,12 @@ public class SpawnActorController {
     }
 
     public Value callAction(String system, String actor, String commandName, Any value, Protocol.Context context) {
-        //if (actors.containsKey(actor)) {
             Optional<Entity> optionalEntity = getEntityByActor(actor);
             if (optionalEntity.isPresent()) {
                 try {
                     Entity entity = optionalEntity.get();
                     final Object actorRef = this.context.getBean(entity.getActorType());
-                    final Entity.EntityMethod entityMethod = entity.getCommands().get(commandName);
+                    final Entity.EntityMethod entityMethod = entity.getActions().get(commandName);
                     final Method actorMethod = entityMethod.getMethod();
                     Class inputType = entityMethod.getInputType();
 
@@ -154,8 +148,6 @@ public class SpawnActorController {
                     throw new RuntimeException(e);
                 }
             }
-        //}
-        //throw new ActorNotFoundException();
         return null;
     }
 
@@ -222,7 +214,7 @@ public class SpawnActorController {
                     .build();
 
             ActorOuterClass.ActorSettings settings = ActorOuterClass.ActorSettings.newBuilder()
-                    .setPersistent(actor.isPersistent())
+                    .setStateful(actor.isStateful())
                     .setSnapshotStrategy(snapshotStrategy)
                     .setDeactivationStrategy(deactivateStrategy)
                     .build();
@@ -260,7 +252,7 @@ public class SpawnActorController {
                 .build();
 
         ActorOuterClass.ActorSettings settings = ActorOuterClass.ActorSettings.newBuilder()
-                .setPersistent(entity.isPersistent())
+                .setStateful(entity.isStateful())
                 .setSnapshotStrategy(snapshotStrategy)
                 .setDeactivationStrategy(deactivateStrategy)
                 .build();

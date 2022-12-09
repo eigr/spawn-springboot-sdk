@@ -1,6 +1,7 @@
 package io.eigr.spawn.springboot.starter.annotations;
 
 import com.google.protobuf.GeneratedMessageV3;
+import io.eigr.spawn.springboot.starter.internal.ActorKind;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.AliasFor;
@@ -22,12 +23,21 @@ public @interface ActorEntity {
     @AliasFor("value")
     String name() default "";
 
-    boolean persistent() default true;
+    ActorKind kind() default ActorKind.SINGLETON;
+
+    boolean stateful() default true;
 
     Class<? extends GeneratedMessageV3> stateType();
 
     long deactivatedTimeout() default 60000;
 
     long snapshotTimeout() default 50000;
+
+    String channel() default "";
+
+    int minPoolSize() default 1;
+
+    int maxPoolSize() default 0;
+
 
 }
