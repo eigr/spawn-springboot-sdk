@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.time.Instant;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.stream.IntStream;
 
 @Log4j2
@@ -86,18 +87,19 @@ public class App {
                             MyBusinessMessage result = (MyBusinessMessage)
                                     actorSystem.invoke(actorName, "sum", input, MyBusinessMessage.class);
                             log.info("Actor Invocation No Cached Request Time Elapsed: {}ms",
-                                    Duration.between(noRequest, Instant.now()).getSeconds());
+                                    ChronoUnit.MILLIS.between(noRequest, Instant.now()));
+
 
                             Instant cachedRequest = Instant.now();
                             actorSystem.invoke(actorName, "get", MyState.class);
                             log.info("Actor Invocation Cached Request Time Elapsed: {}ms",
-                                    Duration.between(cachedRequest, Instant.now()).getSeconds());
+                                    ChronoUnit.MILLIS.between(cachedRequest, Instant.now()));
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
                     });
         });
-        log.info("Actor Invocations {} interactions in Request Time Elapsed: {}ms",
+        log.info("Actor Invocations {} interactions in Request Time Elapsed: {}s",
                 (actors_iterations + requestCount), Duration.between(initialLoop, Instant.now()).getSeconds());
     }
 }

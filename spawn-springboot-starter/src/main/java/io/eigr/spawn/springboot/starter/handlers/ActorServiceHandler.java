@@ -3,6 +3,7 @@ package io.eigr.spawn.springboot.starter.handlers;
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.eigr.functions.protocol.Protocol;
+import io.eigr.functions.protocol.actors.ActorOuterClass;
 import io.eigr.spawn.springboot.starter.Value;
 import io.eigr.spawn.springboot.starter.annotations.ActorHandler;
 import io.eigr.spawn.springboot.starter.internal.SpawnActorController;
@@ -34,8 +35,9 @@ public final class ActorServiceHandler {
         Protocol.ActorInvocation actorInvocationRequest = Protocol.ActorInvocation.parseFrom(data);
         Protocol.Context context = actorInvocationRequest.getCurrentContext();
 
-        String actor = actorInvocationRequest.getActorName();
-        String system = actorInvocationRequest.getActorSystem();
+        ActorOuterClass.ActorId actorId = actorInvocationRequest.getActor();
+        String actor = actorId.getName();
+        String system = actorId.getSystem();
         String commandName = actorInvocationRequest.getCommandName();
 
         Any value = actorInvocationRequest.getValue();

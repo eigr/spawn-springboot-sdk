@@ -1,21 +1,16 @@
 package io.eigr.spawn.example;
 
 import io.eigr.spawn.springboot.starter.ActorContext;
-import io.eigr.spawn.springboot.starter.ActorIdentity;
 import io.eigr.spawn.springboot.starter.Value;
 import io.eigr.spawn.springboot.starter.annotations.Action;
 import io.eigr.spawn.springboot.starter.annotations.ActorEntity;
+import io.eigr.spawn.springboot.starter.internal.ActorKind;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Optional;
 
 @Log4j2
-@ActorEntity(
-        name = ActorIdentity.Abstract,
-        stateType = MyState.class,
-        snapshotTimeout = 5000,
-        deactivatedTimeout = 10000
-)
+@ActorEntity(kind = ActorKind.ABSTRACT, stateType = MyState.class)
 public class AbstractActor {
 
     @Action(name = "sum", inputType = MyBusinessMessage.class)

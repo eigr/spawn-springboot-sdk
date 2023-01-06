@@ -23,6 +23,7 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -82,7 +83,9 @@ public class OkHttpSpawnClient implements SpawnClient {
         Call call = client.newCall(request);
         try (Response response = call.execute()) {
             assert response.body() != null;
-            return Protocol.RegistrationResponse.parseFrom(response.body().bytes());
+            return Protocol.RegistrationResponse.parseFrom(
+                    Objects.requireNonNull(response.body()
+                    ).bytes());
         } catch (Exception e) {
             log.error("Error registering Actors", e);
             throw new Exception(e);
@@ -97,13 +100,15 @@ public class OkHttpSpawnClient implements SpawnClient {
         RequestBody body = RequestBody.create(registration.toByteArray(), MediaType.parse(SPAWN_MEDIA_TYPE));
 
         Request request = new Request.Builder()
-                .url(makeSpawnURLFrom(registration.getActorSystem().getName()))
+                .url(makeSpawnURLFrom(registration.getActors(0).getSystem()))
                 .post(body).build();
 
         Call call = client.newCall(request);
         try (Response response = call.execute()) {
             assert response.body() != null;
-            return Protocol.SpawnResponse.parseFrom(response.body().bytes());
+            return Protocol.SpawnResponse.parseFrom(
+                    Objects.requireNonNull(response.body()
+                    ).bytes());
         } catch (Exception e) {
             log.error("Error registering Actors", e);
             throw new Exception(e);
@@ -126,7 +131,7 @@ public class OkHttpSpawnClient implements SpawnClient {
         Response callInvocationResponse = invocationCall.execute();
 
         return Protocol.InvocationResponse
-                .parseFrom(callInvocationResponse.body().bytes());
+                .parseFrom(Objects.requireNonNull(callInvocationResponse.body()).bytes());
     }
 
     private String makeURLForSystemAndActor(String systemName, String actorName) {

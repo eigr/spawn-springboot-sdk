@@ -1,6 +1,6 @@
 package io.eigr.spawn.springboot.starter.internal;
 
-import io.eigr.spawn.springboot.starter.ActorIdentity;
+import io.eigr.functions.protocol.actors.ActorOuterClass;
 import io.eigr.spawn.springboot.starter.annotations.Action;
 import io.eigr.spawn.springboot.starter.annotations.ActorEntity;
 import io.eigr.spawn.springboot.starter.annotations.TimerAction;
@@ -69,105 +69,188 @@ public final class ActorClassGraphEntityScan implements EntityScan {
         final List<Class<?>> actorEntities = getClassAnnotationWith(ActorEntity.class);
 
         return actorEntities.stream().map(entity -> {
-            ActorEntity actor = entity.getAnnotation(ActorEntity.class);
-            long deactivateTimeout = actor.deactivatedTimeout();
-            long snapshotTimeout = actor.snapshotTimeout();
-            String actorBeanName = entity.getSimpleName();
-            boolean isStateful = actor.stateful();
-            Class stateType = actor.stateType();
+                    ActorEntity actor = entity.getAnnotation(ActorEntity.class);
 
-            String actorName;
-            if (!Objects.isNull(actor.name()) || !actor.name().isEmpty()) {
-                actorName = actor.name();
-            } else {
-                actorName = actorBeanName;
-            }
+                    String actorBeanName = entity.getSimpleName();
+                    String actorName = getActorName(actor, actorBeanName);
+                    ActorKind kind = actor.kind();
+                    long deactivateTimeout = actor.deactivatedTimeout();
+                    long snapshotTimeout = actor.snapshotTimeout();
+                    boolean isStateful = actor.stateful();
+                    Class stateType = actor.stateType();
+                    int minPoolSize = actor.minPoolSize();
+                    int maxPoolSize = actor.maxPoolSize();
 
-            final Map<String, Entity.EntityMethod> actions = new HashMap<>();
-            final Map<String, Entity.EntityMethod> timerActions = new HashMap<>();
-            for (Method method : entity.getDeclaredMethods()) {
+                    final Map<String, Entity.EntityMethod> actions = buildActions(entity, Action.class);
+                    final Map<String, Entity.EntityMethod> timerActions = buildActions(entity, TimerAction.class);
 
-                if (method.isAnnotationPresent(Action.class)) {
-                    Action act = method.getAnnotation(Action.class);
-                    try {
-                        method.setAccessible(true);
-                        String methodName = method.getName();
-                        String commandName = (
-                                (!act.name().equalsIgnoreCase("")) ? act.name() : methodName
-                        );
-                        Class<?> inputType = (
-                                !act.inputType().isAssignableFrom(Action.Default.class) ? act.inputType() :
-                                        method.getParameterTypes()[0]
-                        );
-                        Class<?> outputType = (
-                                !act.outputType().isAssignableFrom(Action.Default.class) ? act.outputType() :
-                                        method.getReturnType()
-                        );
+                    Entity entityType = new Entity(
+                            actorName,
+                            entity,
+                            getKind(kind),
+                            stateType,
+                            actorBeanName,
+                            isStateful,
+                            deactivateTimeout,
+                            snapshotTimeout,
+                            actions,
+                            timerActions,
+                            minPoolSize,
+                            maxPoolSize
+                    );
 
-                        Entity.EntityMethod action = new Entity.EntityMethod(
-                                commandName,
-                                Entity.EntityMethodType.DIRECT,
-                                0,
-                                method,
-                                inputType,
-                                outputType
-                        );
-
-                        actions.put(commandName, action);
-                    } catch (SecurityException e) {
-                        log.error("Failure on load Actor Action", e);
-                    }
-                }
-
-                if (method.isAnnotationPresent(TimerAction.class)) {
-                    TimerAction act = method.getAnnotation(TimerAction.class);
-                    try {
-                        method.setAccessible(true);
-                        String methodName = method.getName();
-                        String actionName = (
-                                (!act.name().equalsIgnoreCase("")) ? act.name() : methodName
-                        );
-                        Class<?> inputType = (
-                                !act.inputType().isAssignableFrom(TimerAction.Default.class) ? act.inputType() :
-                                        method.getParameterTypes()[0]
-                        );
-                        Class<?> outputType = (
-                                !act.outputType().isAssignableFrom(TimerAction.Default.class) ? act.outputType() :
-                                        method.getReturnType()
-                        );
-
-                        Entity.EntityMethod timerAction = new Entity.EntityMethod(
-                                actionName,
-                                Entity.EntityMethodType.TIMER,
-                                act.period(),
-                                method,
-                                inputType,
-                                outputType
-                        );
-
-                        timerActions.put(actionName, timerAction);
-                    } catch (SecurityException e) {
-                        log.error("Failure on load Actor Action", e);
-                    }
-                }
-            }
-
-            Entity entityType = new Entity(
-                    actorName,
-                    entity,
-                    stateType,
-                    actorBeanName,
-                    isStateful,
-                    deactivateTimeout,
-                    snapshotTimeout,
-                    actions,
-                    timerActions);
-
-            log.info("Registering Actor: {}", actorName);
-            log.debug("Registering Entity -> {}", entityType);
-            return entityType;
-        })
+                    log.info("Registering Actor: {}", actorName);
+                    log.debug("Registering Entity -> {}", entityType);
+                    return entityType;
+                })
                 .collect(Collectors.toList());
+    }
+
+    private Map<String, Entity.EntityMethod> buildActions(Class<?> entity, Class<? extends Annotation> annotationType) {
+        final Map<String, Entity.EntityMethod> actions = new HashMap<>();
+
+        List<Method> methods = Arrays.stream(entity.getDeclaredMethods())
+                .filter(method -> method.isAnnotationPresent(annotationType))
+                .collect(Collectors.toList());
+
+        for (Method method : methods) {
+
+            try {
+                method.setAccessible(true);
+                String commandName = getCommandName(method, annotationType);
+                Class<?> inputType = getInputType(method, annotationType);
+                Class<?> outputType = getOutputType(method, annotationType);
+
+                Entity.EntityMethod action = new Entity.EntityMethod(
+                        commandName,
+                        getEntityMethodType(method, annotationType),
+                        getPeriod(method, annotationType),
+                        method,
+                        inputType,
+                        outputType
+                );
+
+                actions.put(commandName, action);
+            } catch (SecurityException e) {
+                log.error("Failure on load Actor Action", e);
+            }
+        }
+
+        return actions;
+    }
+
+    private int getPeriod(Method method, Class<? extends Annotation> type) {
+        int period = 0;
+
+        if (type.isAssignableFrom(TimerAction.class)) {
+            TimerAction act = method.getAnnotation(TimerAction.class);
+            period = act.period();
+        }
+
+        return period;
+    }
+
+    private Entity.EntityMethodType getEntityMethodType(Method method, Class<? extends Annotation> type) {
+        Entity.EntityMethodType entityMethodType = null;
+
+        if (type.isAssignableFrom(Action.class)) {
+            entityMethodType = Entity.EntityMethodType.DIRECT;
+        }
+
+        if (type.isAssignableFrom(TimerAction.class)) {
+            entityMethodType = Entity.EntityMethodType.TIMER;
+        }
+
+        return entityMethodType;
+    }
+
+    private String getCommandName(Method method, Class<? extends Annotation> type) {
+        String commandName = "";
+
+        if (type.isAssignableFrom(Action.class)) {
+            Action act = method.getAnnotation(Action.class);
+            commandName = (
+                    (!act.name().equalsIgnoreCase("")) ? act.name() : method.getName()
+            );
+        }
+
+        if (type.isAssignableFrom(TimerAction.class)) {
+            TimerAction act = method.getAnnotation(TimerAction.class);
+            commandName = (
+                    (!act.name().equalsIgnoreCase("")) ? act.name() : method.getName()
+            );
+        }
+
+        return commandName;
+    }
+
+    private Class<?> getInputType(Method method, Class<? extends Annotation> type) {
+        Class<?> inputType = null;
+
+        if (type.isAssignableFrom(Action.class)) {
+            Action act = method.getAnnotation(Action.class);
+            inputType = (
+                    !act.inputType().isAssignableFrom(Action.Default.class) ? act.inputType() :
+                            method.getParameterTypes()[0]
+            );
+        }
+
+        if (type.isAssignableFrom(TimerAction.class)) {
+            TimerAction act = method.getAnnotation(TimerAction.class);
+            inputType = (
+                    !act.inputType().isAssignableFrom(TimerAction.Default.class) ? act.inputType() :
+                            method.getParameterTypes()[0]
+            );
+        }
+
+        return inputType;
+    }
+
+    private Class<?> getOutputType(Method method, Class<? extends Annotation> type) {
+        Class<?> outputType = null;
+
+        if (type.isAssignableFrom(Action.class)) {
+            Action act = method.getAnnotation(Action.class);
+            outputType = (
+                    !act.outputType().isAssignableFrom(Action.Default.class) ? act.outputType() :
+                            method.getReturnType()
+            );
+        }
+
+        if (type.isAssignableFrom(TimerAction.class)) {
+            TimerAction act = method.getAnnotation(TimerAction.class);
+            outputType = (
+                    !act.outputType().isAssignableFrom(TimerAction.Default.class) ? act.outputType() :
+                            method.getReturnType()
+            );
+        }
+
+        return outputType;
+    }
+
+    private String getActorName(ActorEntity actor, String beanName) {
+        if (isNullOrEmpty(actor)) {
+            return beanName;
+        }
+
+        return actor.name();
+    }
+
+    private boolean isNullOrEmpty(ActorEntity actor) {
+        return (Objects.isNull(actor.name()) || actor.name().isEmpty());
+    }
+
+    private ActorOuterClass.Kind getKind(ActorKind kind) {
+        switch (kind) {
+            case ABSTRACT:
+                return ActorOuterClass.Kind.ABSTRACT;
+            case POOLED:
+                return ActorOuterClass.Kind.POOLED;
+            case PROXY:
+                return ActorOuterClass.Kind.PROXY;
+            default:
+                return ActorOuterClass.Kind.SINGLETON;
+        }
     }
 
     private List<Class<?>> getClassAnnotationWith(Class<? extends Annotation> annotationType) {

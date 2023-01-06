@@ -4,6 +4,7 @@ import io.eigr.spawn.springboot.starter.ActorContext;
 import io.eigr.spawn.springboot.starter.Value;
 import io.eigr.spawn.springboot.starter.annotations.Action;
 import io.eigr.spawn.springboot.starter.annotations.ActorEntity;
+import io.eigr.spawn.springboot.starter.internal.ActorKind;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Optional;
@@ -11,6 +12,7 @@ import java.util.Optional;
 @Log4j2
 @ActorEntity(
         name = "joe",
+        kind = ActorKind.SINGLETON,
         stateType = MyState.class,
         snapshotTimeout = 5000,
         deactivatedTimeout = 10000
