@@ -30,12 +30,12 @@ public final class SpawnActorController {
     private static final Logger log = LoggerFactory.getLogger(SpawnActorController.class);
 
     private final Map<String, ActorOuterClass.Actor> actors;
-    private ActorOuterClass.ActorSystem actorSystem;
     private final ActorClassGraphEntityScan actorClassGraphEntityScan;
     private final ApplicationContext context;
     private final List<Entity> entities;
     private final SpawnClient spawnClient;
     private final SpawnProperties spawnProperties;
+    private ActorOuterClass.ActorSystem actorSystem;
 
 
     public SpawnActorController(ApplicationContext context, SpawnClient spawnClient, SpawnProperties spawnProperties, ActorClassGraphEntityScan actorClassGraphEntityScan) {
@@ -107,58 +107,29 @@ public final class SpawnActorController {
 
         Any value = actorInvocationRequest.getValue();
 
-        Value valueResponse = callAction(system, actor, commandName, value, context);
+        Optional<Value> maybeValueResponse = callAction(system, actor, commandName, value, context);
         log.info("Actor {} return ActorInvocationResponse for command {}. Result value: {}",
-                actor, commandName, valueResponse);
-        Any encodedState = Any.pack(valueResponse.getState());
-        Any encodedValue = Any.pack(valueResponse.getValue());
+                actor, commandName, maybeValueResponse);
 
-        Protocol.Context updatedContext = Protocol.Context.newBuilder()
-                .setState(encodedState)
-                .build();
+        if (maybeValueResponse.isPresent()) {
+            Value valueResponse = maybeValueResponse.get();
+            Any encodedState = Any.pack(valueResponse.getState());
+            Any encodedValue = Any.pack(valueResponse.getValue());
 
-        return Protocol.ActorInvocationResponse.newBuilder()
-                .setActorName(actor)
-                .setActorSystem(system)
-                .setValue(encodedValue)
-                .setWorkflow(buildWorkflow(valueResponse))
-                .setUpdatedContext(updatedContext)
-                .build();
-    }
+            Protocol.Context updatedContext = Protocol.Context.newBuilder()
+                    .setState(encodedState)
+                    .build();
 
-    public Value callAction(String system, String actor, String commandName, Any value, Protocol.Context context) {
-        Optional<Entity> optionalEntity = getEntityByActor(actor);
-        if (optionalEntity.isPresent()) {
-            try {
-                Entity entity = optionalEntity.get();
-                final Object actorRef = this.context.getBean(entity.getActorType());
-                final Entity.EntityMethod entityMethod = entity.getActions().get(commandName);
-                final Method actorMethod = entityMethod.getMethod();
-                Class inputType = entityMethod.getInputType();
-
-                ActorContext actorContext;
-                if (context.hasState()) {
-                    Object state = context.getState().unpack(entity.getStateType());
-                    actorContext = new ActorContext(state);
-                } else {
-                    actorContext = new ActorContext();
-                }
-
-                if (inputType.isAssignableFrom(ActorContext.class)) {
-                    return (Value) actorMethod.invoke(actorRef, actorContext);
-                } else {
-                    final Object unpack = value.unpack(entityMethod.getInputType());
-                    return (Value) actorMethod.invoke(actorRef, unpack, actorContext);
-                }
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
-            } catch (InvalidProtocolBufferException e) {
-                throw new RuntimeException(e);
-            }
+            return Protocol.ActorInvocationResponse.newBuilder()
+                    .setActorName(actor)
+                    .setActorSystem(system)
+                    .setValue(encodedValue)
+                    .setWorkflow(buildWorkflow(valueResponse))
+                    .setUpdatedContext(updatedContext)
+                    .build();
         }
-        return null;
+
+        throw new ActorInvokeException("Action result is null");
     }
 
     public <T extends GeneratedMessageV3> Object invoke(String actor, String cmd, Class<T> outputType) throws Exception {
@@ -196,7 +167,8 @@ public final class SpawnActorController {
             case UNKNOWN:
             case ERROR:
             case UNRECOGNIZED:
-                throw new ActorInvokeException();
+                throw new ActorInvokeException(
+                        String.format("Unknown error when trying to invoke Actor %s", actor));
             case ACTOR_NOT_FOUND:
                 throw new ActorNotFoundException();
             case OK:
@@ -208,6 +180,41 @@ public final class SpawnActorController {
         }
 
         throw new ActorNotFoundException();
+    }
+
+    private Optional<Value> callAction(String system, String actor, String commandName, Any value, Protocol.Context context) {
+        Optional<Entity> optionalEntity = getEntityByActor(actor);
+        if (optionalEntity.isPresent()) {
+            try {
+                Entity entity = optionalEntity.get();
+                final Object actorRef = this.context.getBean(entity.getActorType());
+                final Entity.EntityMethod entityMethod = entity.getActions().get(commandName);
+                final Method actorMethod = entityMethod.getMethod();
+                Class inputType = entityMethod.getInputType();
+
+                ActorContext actorContext;
+                if (context.hasState()) {
+                    Object state = context.getState().unpack(entity.getStateType());
+                    actorContext = new ActorContext(state);
+                } else {
+                    actorContext = new ActorContext();
+                }
+
+                if (inputType.isAssignableFrom(ActorContext.class)) {
+                    return Optional.of((Value) actorMethod.invoke(actorRef, actorContext));
+                } else {
+                    final Object unpack = value.unpack(entityMethod.getInputType());
+                    return Optional.of((Value) actorMethod.invoke(actorRef, unpack, actorContext));
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (InvalidProtocolBufferException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return Optional.empty();
     }
 
     private Protocol.Workflow buildWorkflow(Value valueResponse) {
