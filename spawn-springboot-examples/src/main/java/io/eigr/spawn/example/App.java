@@ -35,13 +35,13 @@ public class App {
             SpawnSystem actorSystem = ctx.getBean(SpawnSystem.class);
             createActors(actorSystem, actors_iterations);
 
-            Thread.sleep(1000);
+            //Thread.sleep(1000);
 
             //sequentialSumInvokes(actorSystem, actors_iterations, requestCount);
 
-            Thread.sleep(1000);
+            //Thread.sleep(1000);
 
-            parallelSumAndGetInvokes(actorSystem, actors_iterations, requestCount);
+            //parallelSumAndGetInvokes(actorSystem, actors_iterations, requestCount);
         };
     }
 
@@ -49,7 +49,10 @@ public class App {
         for (int i = 0; i < actors_iterations; i++) {
             String actorName = String.format("concreteActor-%s", i);
             log.info("Let's spawning Actor {}", actorName);
+            Instant instant = Instant.now();
             actorSystem.spawn(actorName, AbstractActor.class);
+            log.info("Spawning Actor Time Elapsed: {}ms",
+                    ChronoUnit.MILLIS.between(instant, Instant.now()));
         }
     }
     private void sequentialSumInvokes(SpawnSystem actorSystem, int actors_iterations, int requestCount) {
