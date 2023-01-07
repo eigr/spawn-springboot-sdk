@@ -26,26 +26,21 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class SpawnActorController {
+public final class SpawnActorController {
     private static final Logger log = LoggerFactory.getLogger(SpawnActorController.class);
 
-    private final List<Entity> entities;
-
     private final Map<String, ActorOuterClass.Actor> actors;
-
+    private ActorOuterClass.ActorSystem actorSystem;
+    private final ActorClassGraphEntityScan actorClassGraphEntityScan;
     private final ApplicationContext context;
-
+    private final List<Entity> entities;
+    private final SpawnClient spawnClient;
     private final SpawnProperties spawnProperties;
 
-    private final SpawnClient client;
 
-    private final ActorClassGraphEntityScan actorClassGraphEntityScan;
-
-    private ActorOuterClass.ActorSystem actorSystem;
-
-    public SpawnActorController(ApplicationContext context, SpawnClient client, SpawnProperties spawnProperties, ActorClassGraphEntityScan actorClassGraphEntityScan) {
+    public SpawnActorController(ApplicationContext context, SpawnClient spawnClient, SpawnProperties spawnProperties, ActorClassGraphEntityScan actorClassGraphEntityScan) {
         this.context = context;
-        this.client = client;
+        this.spawnClient = spawnClient;
         this.spawnProperties = spawnProperties;
         this.actorClassGraphEntityScan = actorClassGraphEntityScan;
         this.entities = actorClassGraphEntityScan.findEntities();
@@ -75,7 +70,7 @@ public class SpawnActorController {
                 .setActorSystem(actorSystem)
                 .build();
 
-        client.register(registration);
+        spawnClient.register(registration);
     }
 
     public void spawn(String name, Class actorClass) throws Exception {
@@ -97,7 +92,7 @@ public class SpawnActorController {
                     .addActors(actor.getId())
                     .build();
 
-            client.spawn(registration);
+            spawnClient.spawn(registration);
         }
     }
 
@@ -195,7 +190,7 @@ public class SpawnActorController {
                 .setValue(commandArg)
                 .build();
 
-        Protocol.InvocationResponse resp = client.invoke(invocationRequest);
+        Protocol.InvocationResponse resp = spawnClient.invoke(invocationRequest);
         final Protocol.RequestStatus status = resp.getStatus();
         switch (status.getStatus()) {
             case UNKNOWN:
