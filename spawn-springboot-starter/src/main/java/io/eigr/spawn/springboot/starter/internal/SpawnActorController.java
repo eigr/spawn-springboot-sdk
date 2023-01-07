@@ -11,6 +11,10 @@ import io.eigr.spawn.springboot.starter.Value;
 import io.eigr.spawn.springboot.starter.autoconfigure.SpawnProperties;
 import io.eigr.spawn.springboot.starter.exceptions.ActorInvokeException;
 import io.eigr.spawn.springboot.starter.exceptions.ActorNotFoundException;
+import io.eigr.spawn.springboot.starter.workflows.Broadcast;
+import io.eigr.spawn.springboot.starter.workflows.Forward;
+import io.eigr.spawn.springboot.starter.workflows.Pipe;
+import io.eigr.spawn.springboot.starter.workflows.SideEffect;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,6 +101,36 @@ public class SpawnActorController {
         }
     }
 
+    public Protocol.ActorInvocationResponse handleRequest(byte[] request) throws InvalidProtocolBufferException {
+        Protocol.ActorInvocation actorInvocationRequest = Protocol.ActorInvocation.parseFrom(request);
+        Protocol.Context context = actorInvocationRequest.getCurrentContext();
+
+        ActorOuterClass.ActorId actorId = actorInvocationRequest.getActor();
+        String actor = actorId.getName();
+        String system = actorId.getSystem();
+        String commandName = actorInvocationRequest.getCommandName();
+
+        Any value = actorInvocationRequest.getValue();
+
+        Value valueResponse = callAction(system, actor, commandName, value, context);
+        log.info("Actor {} return ActorInvocationResponse for command {}. Result value: {}",
+                actor, commandName, valueResponse);
+        Any encodedState = Any.pack(valueResponse.getState());
+        Any encodedValue = Any.pack(valueResponse.getValue());
+
+        Protocol.Context updatedContext = Protocol.Context.newBuilder()
+                .setState(encodedState)
+                .build();
+
+        return Protocol.ActorInvocationResponse.newBuilder()
+                .setActorName(actor)
+                .setActorSystem(system)
+                .setValue(encodedValue)
+                .setWorkflow(buildWorkflow(valueResponse))
+                .setUpdatedContext(updatedContext)
+                .build();
+    }
+
     public Value callAction(String system, String actor, String commandName, Any value, Protocol.Context context) {
         Optional<Entity> optionalEntity = getEntityByActor(actor);
         if (optionalEntity.isPresent()) {
@@ -179,6 +213,38 @@ public class SpawnActorController {
         }
 
         throw new ActorNotFoundException();
+    }
+
+    private Protocol.Workflow buildWorkflow(Value valueResponse) {
+        Protocol.Workflow.Builder workflowBuilder = Protocol.Workflow.newBuilder();
+
+        if (valueResponse.getBroadcast().isPresent()) {
+            Protocol.Broadcast b = ((Broadcast) valueResponse.getBroadcast().get()).build();
+            workflowBuilder.setBroadcast(b);
+        }
+
+        if (valueResponse.getForward().isPresent()) {
+            Protocol.Forward f = ((Forward) valueResponse.getForward().get()).build();
+            workflowBuilder.setForward(f);
+        }
+
+        if (valueResponse.getPipe().isPresent()) {
+            Protocol.Pipe p = ((Pipe) valueResponse.getPipe().get()).build();
+            workflowBuilder.setPipe(p);
+        }
+
+        if (valueResponse.getEffects().isPresent()) {
+            List<SideEffect> efs = ((List<SideEffect>) valueResponse.getEffects().get());
+            workflowBuilder.addAllEffects(getProtocolEffects(efs));
+        }
+
+        return workflowBuilder.build();
+    }
+
+    private List<Protocol.SideEffect> getProtocolEffects(List<SideEffect> effects) {
+        return effects.stream()
+                .map(SideEffect::build)
+                .collect(Collectors.toList());
     }
 
     @NotNull
