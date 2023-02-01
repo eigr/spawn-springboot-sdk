@@ -29,7 +29,7 @@ public final class ActorServiceHandler {
             produces = {MediaType.APPLICATION_OCTET_STREAM_VALUE}
     )
     public Mono<ResponseEntity<ByteArrayResource>> post(@RequestBody() byte[] data) throws InvalidProtocolBufferException {
-        log.info("Received Actor Action Request: {}", data);
+        log.trace("Received Actor Action Request: {}", data);
         Protocol.ActorInvocationResponse actorInvocationResponse = actorController.handleRequest(data);
         return buildHttpResponse(actorInvocationResponse);
     }
@@ -39,8 +39,8 @@ public final class ActorServiceHandler {
         ByteArrayResource resource = new ByteArrayResource(responseBytes);
         long length = resource.contentLength();
 
-        log.debug("Response raw bytes: {}", responseBytes);
-        log.debug("Content length for ActorInvocationResponse: {}",length );
+        log.trace("Response raw bytes: {}", responseBytes);
+        log.trace("Content length for ActorInvocationResponse: {}",length );
         return Mono.just(ResponseEntity
                 .ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)

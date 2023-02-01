@@ -34,7 +34,7 @@ public class OkHttpSpawnClient implements SpawnClient {
 
     private static final String SPAWN_ACTOR_SPAWN = "/api/v1/system/%s/actors/spawn";
 
-    @Value("${io.eigr.spawn.springboot.starter.proxyUdsEnable}")
+    @Value("${io.eigr.spawn.springboot.starter.proxyUdsEnable:false}")
     private boolean isUdsEnable;
 
     @Value("${io.eigr.spawn.springboot.starter.proxyUdsSocketFilePath}")

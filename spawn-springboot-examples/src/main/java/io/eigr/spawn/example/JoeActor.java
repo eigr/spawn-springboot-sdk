@@ -18,6 +18,7 @@ import java.util.Optional;
         deactivatedTimeout = 10000
 )
 public class JoeActor {
+
     @Action
     public Value get(ActorContext<MyState> context) {
         log.info("Received invocation. Context: {}", context);
@@ -43,7 +44,7 @@ public class JoeActor {
             Optional<MyState> oldState = context.getState();
             value = oldState.get().getValue() + msg.getValue();
         } else {
-            log.info("State is NOT present. Msg getValue is {}", msg.getValue());
+            //log.info("State is NOT present. Msg getValue is {}", msg.getValue());
             value = msg.getValue();
         }
 

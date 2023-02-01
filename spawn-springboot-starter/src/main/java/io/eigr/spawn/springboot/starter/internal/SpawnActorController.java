@@ -82,7 +82,7 @@ public final class SpawnActorController {
             entity.setActorName(name);
 
             ActorOuterClass.Actor actor = getActor(entity, originalName);
-            log.debug("Spawning Actor {}", actor);
+            log.trace("Spawning Actor {}", actor);
             if (!actors.containsKey(name)) {
                 actors.put(name, actor);
                 this.entities.add(entity);

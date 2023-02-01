@@ -26,6 +26,8 @@ public final class ActorClassGraphEntityScan implements EntityScan {
     private final SpawnProperties properties;
     private final ClassGraph classGraph;
 
+    private List<Entity> entities;
+
     public ActorClassGraphEntityScan(SpawnProperties properties) {
         this.properties = properties;
         this.classGraph = new ClassGraph()
@@ -49,9 +51,11 @@ public final class ActorClassGraphEntityScan implements EntityScan {
     @Override
     public List<Entity> findEntities() {
         Instant now = Instant.now();
-        List<Entity> actors = getActors();
-        log.debug("Found {} Entity(ies) in {}", (actors.size()), Duration.between(now, Instant.now()));
-        return actors;
+        if (Objects.isNull(entities)) {
+            entities = getActors();
+        }
+        log.debug("Found {} Entity(ies) in {}", (entities.size()), Duration.between(now, Instant.now()));
+        return entities;
     }
 
     public Optional<Entity> findEntity(Class type) {
@@ -62,7 +66,10 @@ public final class ActorClassGraphEntityScan implements EntityScan {
     }
 
     private List<Entity> getActors() {
-        return getEntities();
+        if (Objects.isNull(entities)) {
+            entities = getEntities();
+        }
+        return entities;
     }
 
     private List<Entity> getEntities() {

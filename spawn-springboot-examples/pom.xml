@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.eigr</groupId>
     <artifactId>spawn-springboot-examples</artifactId>
-    <version>0.1.10</version>
+    <version>0.5.0</version>
     <name>spawn-springboot-examples</name>
     <url>http://www.example.com</url>
 
@@ -17,7 +17,7 @@
     <parent>
         <groupId>io.eigr</groupId>
         <artifactId>spawn-springboot-sdk</artifactId>
-        <version>0.1.10</version>
+        <version>0.5.0</version>
     </parent>
 
     <dependencyManagement>
@@ -43,12 +43,25 @@
         <dependency>
             <groupId>io.eigr</groupId>
             <artifactId>spawn-springboot-starter</artifactId>
-            <version>0.1.10</version>
+            <version>0.5.0</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-core</artifactId>
+            <version>1.35</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openjdk.jmh</groupId>
+            <artifactId>jmh-generator-annprocess</artifactId>
+            <version>1.35</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -149,7 +162,7 @@
                 </executions>
                 <configuration>
                     <to>
-                        <image>eigr/spawn-springboot-examples</image>
+                        <image>eigr/spawn-springboot-examples:${project.version}</image>
                     </to>
                 </configuration>
             </plugin>

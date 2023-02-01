@@ -11,6 +11,10 @@ public class SpawnSystem {
         this.actorController = actorController;
     }
 
+    public void registerAllActors() throws Exception {
+        actorController.register();
+    }
+
     public void spawn(String name, Class actor) throws Exception {
         actorController.spawn(name, actor);
     }
