@@ -1,4 +1,4 @@
-package io.eigr.spawn.springboot.starter.internal;
+package io.eigr.spawn.springboot.internal;
 
 import io.eigr.functions.protocol.Protocol;
 

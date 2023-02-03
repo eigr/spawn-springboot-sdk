@@ -1,6 +1,6 @@
 package io.eigr.spawn.springboot.starter.autoconfigure;
 
-import io.eigr.spawn.springboot.starter.internal.SpawnActorController;
+import io.eigr.spawn.springboot.internal.SpawnActorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

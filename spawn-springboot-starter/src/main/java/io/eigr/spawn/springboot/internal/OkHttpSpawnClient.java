@@ -1,8 +1,8 @@
-package io.eigr.spawn.springboot.starter.internal;
+package io.eigr.spawn.springboot.internal;
 
 import io.eigr.functions.protocol.Protocol;
 import io.eigr.spawn.springboot.starter.autoconfigure.SpawnProperties;
-import io.eigr.spawn.springboot.starter.internal.transport.uds.UnixDomainSocketFactory;
+import io.eigr.spawn.springboot.internal.transport.uds.UnixDomainSocketFactory;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

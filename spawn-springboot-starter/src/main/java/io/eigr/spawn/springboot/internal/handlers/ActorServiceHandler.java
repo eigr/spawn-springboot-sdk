@@ -1,9 +1,9 @@
-package io.eigr.spawn.springboot.starter.handlers;
+package io.eigr.spawn.springboot.internal.handlers;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.eigr.functions.protocol.Protocol;
+import io.eigr.spawn.springboot.internal.SpawnActorController;
 import io.eigr.spawn.springboot.starter.annotations.ActorHandler;
-import io.eigr.spawn.springboot.starter.internal.SpawnActorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import reactor.core.publisher.Mono;
 
 @ActorHandler
 @RequestMapping("/api/v1/actors")
-public final class ActorServiceHandler {
+final class ActorServiceHandler {
     private static final Logger log = LoggerFactory.getLogger(ActorServiceHandler.class);
     private final SpawnActorController actorController;
     @Autowired

@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public final class Value<S extends GeneratedMessageV3, V extends GeneratedMessageV3> {
+public final class Value<S extends GeneratedMessageV3, R extends GeneratedMessageV3> {
 
     private final S state;
-    private final V value;
+    private final R response;
     private final Optional<Broadcast<?>> broadcast;
     private final Optional<Forward> forward;
     private final Optional<Pipe> pipe;
@@ -22,7 +22,7 @@ public final class Value<S extends GeneratedMessageV3, V extends GeneratedMessag
 
     public Value() {
         this.state = null;
-        this.value = null;
+        this.response = null;
         this.broadcast = Optional.empty();
         this.forward = Optional.empty();
         this.pipe = Optional.empty();
@@ -31,14 +31,14 @@ public final class Value<S extends GeneratedMessageV3, V extends GeneratedMessag
     }
 
     public Value(
-            V value,
+            R response,
             S state,
             Broadcast<?> broadcast,
             Forward forward,
             Pipe pipe,
             List<SideEffect> effects,
             ResponseType type) {
-        this.value = value;
+        this.response = response;
         this.state = state;
         this.broadcast = Optional.ofNullable(broadcast);
         this.forward =  Optional.ofNullable(forward);
@@ -47,8 +47,8 @@ public final class Value<S extends GeneratedMessageV3, V extends GeneratedMessag
         this.type = type;
     }
 
-    public V getValue() {
-        return value;
+    public R getResponse() {
+        return response;
     }
 
     public S getState() {
@@ -79,7 +79,7 @@ public final class Value<S extends GeneratedMessageV3, V extends GeneratedMessag
     public String toString() {
         final StringBuilder sb = new StringBuilder("Value{");
         sb.append("state=").append(state);
-        sb.append(", value=").append(value);
+        sb.append(", value=").append(response);
         sb.append(", broadcast=").append(broadcast);
         sb.append(", forward=").append(forward);
         sb.append(", pipe=").append(pipe);
@@ -93,10 +93,10 @@ public final class Value<S extends GeneratedMessageV3, V extends GeneratedMessag
         REPLY, NO_REPLY, EMPTY_REPLY
     }
 
-    public static final class ActorValue<S extends GeneratedMessageV3, V extends GeneratedMessageV3> {
+    public static final class ActorValue<S extends GeneratedMessageV3, R extends GeneratedMessageV3> {
         private final List<SideEffect> effects = new ArrayList<>();
         private S state;
-        private V value;
+        private R response;
         private Broadcast<?> broadcast;
         private Forward forward;
         private Pipe pipe;
@@ -108,8 +108,8 @@ public final class Value<S extends GeneratedMessageV3, V extends GeneratedMessag
             return new ActorValue();
         }
 
-        public ActorValue value(V value) {
-            this.value = value;
+        public ActorValue response(R value) {
+            this.response = value;
             return this;
         }
 
@@ -144,11 +144,11 @@ public final class Value<S extends GeneratedMessageV3, V extends GeneratedMessag
         }
 
         public Value reply() {
-            return new Value(this.value, this.state, this.broadcast, this.forward, this.pipe, this.effects, ResponseType.REPLY);
+            return new Value(this.response, this.state, this.broadcast, this.forward, this.pipe, this.effects, ResponseType.REPLY);
         }
 
         public Value noReply() {
-            return new Value(this.value, this.state, this.broadcast, this.forward, this.pipe, this.effects, ResponseType.NO_REPLY);
+            return new Value(this.response, this.state, this.broadcast, this.forward, this.pipe, this.effects, ResponseType.NO_REPLY);
         }
 
         public Value empty() {

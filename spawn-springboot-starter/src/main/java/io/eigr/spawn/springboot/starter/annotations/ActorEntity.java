@@ -1,7 +1,7 @@
 package io.eigr.spawn.springboot.starter.annotations;
 
 import com.google.protobuf.GeneratedMessageV3;
-import io.eigr.spawn.springboot.starter.internal.ActorKind;
+import io.eigr.spawn.springboot.starter.ActorKind;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.AliasFor;

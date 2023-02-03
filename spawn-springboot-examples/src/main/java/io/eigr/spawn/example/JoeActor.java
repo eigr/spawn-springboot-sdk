@@ -4,7 +4,7 @@ import io.eigr.spawn.springboot.starter.ActorContext;
 import io.eigr.spawn.springboot.starter.Value;
 import io.eigr.spawn.springboot.starter.annotations.Action;
 import io.eigr.spawn.springboot.starter.annotations.ActorEntity;
-import io.eigr.spawn.springboot.starter.internal.ActorKind;
+import io.eigr.spawn.springboot.starter.ActorKind;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Optional;
@@ -15,10 +15,8 @@ import java.util.Optional;
         kind = ActorKind.SINGLETON,
         stateType = MyState.class,
         snapshotTimeout = 5000,
-        deactivatedTimeout = 10000
-)
+        deactivatedTimeout = 10000)
 public class JoeActor {
-
     @Action
     public Value get(ActorContext<MyState> context) {
         log.info("Received invocation. Context: {}", context);
@@ -26,7 +24,7 @@ public class JoeActor {
             MyState state = context.getState().get();
             return Value.ActorValue.<MyState, MyBusinessMessage>at()
                     .state(state)
-                    .value(MyBusinessMessage.newBuilder()
+                    .response(MyBusinessMessage.newBuilder()
                             .setValue(state.getValue())
                             .build())
                     .reply();
@@ -48,13 +46,13 @@ public class JoeActor {
             value = msg.getValue();
         }
 
-        log.info("New Value is {}", value);
+         log.info("New Value is {}", value);
         MyBusinessMessage resultValue = MyBusinessMessage.newBuilder()
                 .setValue(value)
                 .build();
 
         return Value.ActorValue.at()
-                .value(resultValue)
+                .response(resultValue)
                 .state(updateState(value))
                 .reply();
     }

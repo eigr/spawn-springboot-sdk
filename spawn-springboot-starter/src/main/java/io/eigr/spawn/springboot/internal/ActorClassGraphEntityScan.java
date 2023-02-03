@@ -1,6 +1,7 @@
-package io.eigr.spawn.springboot.starter.internal;
+package io.eigr.spawn.springboot.internal;
 
 import io.eigr.functions.protocol.actors.ActorOuterClass;
+import io.eigr.spawn.springboot.starter.ActorKind;
 import io.eigr.spawn.springboot.starter.annotations.Action;
 import io.eigr.spawn.springboot.starter.annotations.ActorEntity;
 import io.eigr.spawn.springboot.starter.annotations.TimerAction;

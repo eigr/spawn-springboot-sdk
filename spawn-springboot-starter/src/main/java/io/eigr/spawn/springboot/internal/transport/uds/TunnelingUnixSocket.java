@@ -1,4 +1,4 @@
-package io.eigr.spawn.springboot.starter.internal.transport.uds;
+package io.eigr.spawn.springboot.internal.transport.uds;
 
 import jnr.unixsocket.UnixSocket;
 import jnr.unixsocket.UnixSocketAddress;

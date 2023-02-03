@@ -1,9 +1,9 @@
 package io.eigr.spawn.springboot.starter.autoconfigure;
 
 import io.eigr.spawn.springboot.starter.SpawnSystem;
-import io.eigr.spawn.springboot.starter.internal.ActorClassGraphEntityScan;
-import io.eigr.spawn.springboot.starter.internal.SpawnActorController;
-import io.eigr.spawn.springboot.starter.internal.SpawnClient;
+import io.eigr.spawn.springboot.internal.ActorClassGraphEntityScan;
+import io.eigr.spawn.springboot.internal.SpawnActorController;
+import io.eigr.spawn.springboot.internal.SpawnClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -18,7 +18,7 @@ import org.springframework.retry.annotation.EnableRetry;
 @Configuration
 @PropertySource("classpath:retry.properties")
 @EnableConfigurationProperties(SpawnProperties.class)
-@ComponentScan(basePackages = "io.eigr.spawn.springboot.starter")
+@ComponentScan(basePackages = "io.eigr.spawn.springboot")
 public class SpawnAutoConfiguration {
     @Autowired
     private ApplicationContext context;

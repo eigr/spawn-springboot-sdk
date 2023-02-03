@@ -1,4 +1,4 @@
-package io.eigr.spawn.springboot.starter.internal;
+package io.eigr.spawn.springboot.internal;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.Empty;
@@ -6,11 +6,11 @@ import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.eigr.functions.protocol.Protocol;
 import io.eigr.functions.protocol.actors.ActorOuterClass;
+import io.eigr.spawn.springboot.internal.exceptions.ActorInvokeException;
 import io.eigr.spawn.springboot.starter.ActorContext;
 import io.eigr.spawn.springboot.starter.Value;
 import io.eigr.spawn.springboot.starter.autoconfigure.SpawnProperties;
-import io.eigr.spawn.springboot.starter.exceptions.ActorInvokeException;
-import io.eigr.spawn.springboot.starter.exceptions.ActorNotFoundException;
+import io.eigr.spawn.springboot.internal.exceptions.ActorNotFoundException;
 import io.eigr.spawn.springboot.starter.workflows.Broadcast;
 import io.eigr.spawn.springboot.starter.workflows.Forward;
 import io.eigr.spawn.springboot.starter.workflows.Pipe;
@@ -114,7 +114,7 @@ public final class SpawnActorController {
         if (maybeValueResponse.isPresent()) {
             Value valueResponse = maybeValueResponse.get();
             Any encodedState = Any.pack(valueResponse.getState());
-            Any encodedValue = Any.pack(valueResponse.getValue());
+            Any encodedValue = Any.pack(valueResponse.getResponse());
 
             Protocol.Context updatedContext = Protocol.Context.newBuilder()
                     .setState(encodedState)

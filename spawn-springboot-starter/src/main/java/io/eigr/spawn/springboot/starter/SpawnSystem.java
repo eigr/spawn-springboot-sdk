@@ -1,7 +1,7 @@
 package io.eigr.spawn.springboot.starter;
 
 import com.google.protobuf.GeneratedMessageV3;
-import io.eigr.spawn.springboot.starter.internal.SpawnActorController;
+import io.eigr.spawn.springboot.internal.SpawnActorController;
 
 public class SpawnSystem {
 
