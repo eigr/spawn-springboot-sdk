@@ -1,7 +1,9 @@
 package io.eigr.spawn.springboot.starter;
 
-import com.google.protobuf.GeneratedMessageV3;
 import io.eigr.spawn.springboot.internal.SpawnActorController;
+
+import java.util.Objects;
+import java.util.Optional;
 
 public class SpawnSystem {
 
@@ -19,19 +21,61 @@ public class SpawnSystem {
         actorController.spawn(name, actor);
     }
 
-    public <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invoke(String actor, String cmd, S value, Class<T> outputType) throws Exception {
-        return actorController.invoke(actor, cmd, value, outputType);
-    }
+    public ActionResponse invoke(ActionRequest<?,?> req) throws Exception {
+        ActionResponse.ActionResponseBuilder responseBuilder = ActionResponse.builder();
 
-    public <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invoke(Class actor, String cmd, S value, Class<T> outputType) throws Exception {
-        return actorController.invoke(actor.getSimpleName(), cmd, value, outputType);
-    }
+        if (req.getValue().isPresent() && Objects.nonNull(req.getActorName())) {
+            Object resp = actorController.invoke(
+                    req.getActorName(),
+                    req.getAction(),
+                    req.getValue().get(),
+                    req.getResponseType(),
+                    req.getOpts());
 
-    public <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invoke(String actor, String cmd, Class<T> outputType) throws Exception {
-        return actorController.invoke(actor, cmd, outputType);
-    }
+            return responseBuilder
+                    .value(Optional.of(resp))
+                    .build();
+        }
 
-    public <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invoke(Class actor, String cmd, Class<T> outputType) throws Exception {
-        return actorController.invoke(actor.getSimpleName(), cmd, outputType);
+        if (req.getValue().isPresent() && Objects.nonNull(req.getActorType())) {
+            Object resp = actorController.invoke(
+                    req.getActorType().getSimpleName(),
+                    req.getAction(),
+                    req.getValue().get(),
+                    req.getResponseType(),
+                    req.getOpts());
+
+            return responseBuilder
+                    .value(Optional.of(resp))
+                    .build();
+        }
+
+        if (!req.getValue().isPresent() && Objects.nonNull(req.getActorName())) {
+            Object resp = actorController.invoke(
+                    req.getActorName(),
+                    req.getAction(),
+                    req.getResponseType(),
+                    req.getOpts());
+
+            return responseBuilder
+                    .value(Optional.of(resp))
+                    .build();
+        }
+
+        if (!req.getValue().isPresent() && Objects.nonNull(req.getActorType())) {
+            Object resp = actorController.invoke(
+                    req.getActorType().getSimpleName(),
+                    req.getAction(),
+                    req.getResponseType(),
+                    req.getOpts());
+
+            return responseBuilder
+                    .value(Optional.of(resp))
+                    .build();
+        }
+
+        return responseBuilder
+                .value(Optional.empty())
+                .build();
     }
 }

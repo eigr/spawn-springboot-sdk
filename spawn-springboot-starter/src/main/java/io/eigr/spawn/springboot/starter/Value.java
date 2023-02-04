@@ -6,21 +6,22 @@ import io.eigr.spawn.springboot.starter.workflows.Forward;
 import io.eigr.spawn.springboot.starter.workflows.Pipe;
 import io.eigr.spawn.springboot.starter.workflows.SideEffect;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public final class Value<S extends GeneratedMessageV3, R extends GeneratedMessageV3> {
 
-    private final S state;
-    private final R response;
-    private final Optional<Broadcast<?>> broadcast;
-    private final Optional<Forward> forward;
-    private final Optional<Pipe> pipe;
-    private final Optional<List<SideEffect>> effects;
-    private final ResponseType type;
+    private S state;
+    private R response;
+    private Optional<Broadcast<?>> broadcast;
+    private Optional<Forward> forward;
+    private Optional<Pipe> pipe;
+    private Optional<List<SideEffect>> effects;
 
-    public Value() {
+    private ResponseType type;
+
+    private Value() {
         this.state = null;
         this.response = null;
         this.broadcast = Optional.empty();
@@ -30,20 +31,20 @@ public final class Value<S extends GeneratedMessageV3, R extends GeneratedMessag
         this.type = ResponseType.EMPTY_REPLY;
     }
 
-    public Value(
+    private Value(
             R response,
             S state,
-            Broadcast<?> broadcast,
-            Forward forward,
-            Pipe pipe,
-            List<SideEffect> effects,
+            Optional<Broadcast<?>> broadcast,
+            Optional<Forward> forward,
+            Optional<Pipe> pipe,
+            Optional<List<SideEffect>> effects,
             ResponseType type) {
         this.response = response;
         this.state = state;
-        this.broadcast = Optional.ofNullable(broadcast);
-        this.forward =  Optional.ofNullable(forward);
-        this.pipe =  Optional.ofNullable(pipe);
-        this.effects =  Optional.ofNullable(effects);
+        this.broadcast = broadcast;
+        this.forward = forward;
+        this.pipe = pipe;
+        this.effects = effects;
         this.type = type;
     }
 
@@ -75,6 +76,61 @@ public final class Value<S extends GeneratedMessageV3, R extends GeneratedMessag
         return type;
     }
 
+    public static <S, V> Value at() {
+        return new Value();
+    }
+
+    public Value response(R value) {
+        this.response = value;
+        return this;
+    }
+
+    public Value state(S state) {
+        this.state = state;
+        return this;
+    }
+
+    public Value flow(Broadcast broadcast) {
+        this.broadcast = Optional.of(broadcast);
+        return this;
+    }
+
+    public Value flow(Forward forward) {
+        this.forward = Optional.ofNullable(forward);
+        return this;
+    }
+
+    public Value flow(Pipe pipe) {
+        this.pipe = Optional.of(pipe);
+        return this;
+    }
+
+    public Value flow(SideEffect effect) {
+        if (this.effects.isPresent()) {
+            List<SideEffect> ef = this.effects.get();
+            ef.add(effect);
+            this.effects = Optional.of(ef);
+        }
+        return this;
+    }
+
+    public Value flow(List<SideEffect> effects) {
+        this.effects = Optional.of(effects);
+        return this;
+    }
+
+    public Value reply() {
+        return new Value(this.response, this.state, this.broadcast, this.forward, this.pipe, this.effects, ResponseType.REPLY);
+    }
+
+    public Value noReply() {
+        return new Value(this.response, this.state, this.broadcast, this.forward, this.pipe, this.effects, ResponseType.NO_REPLY);
+    }
+
+    public Value empty() {
+        return new Value();
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("Value{");
@@ -89,70 +145,27 @@ public final class Value<S extends GeneratedMessageV3, R extends GeneratedMessag
         return sb.toString();
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Value<?, ?> value = (Value<?, ?>) o;
+        return Objects.equals(state, value.state) &&
+                Objects.equals(response, value.response) &&
+                Objects.equals(broadcast, value.broadcast) &&
+                Objects.equals(forward, value.forward) &&
+                Objects.equals(pipe, value.pipe) &&
+                Objects.equals(effects, value.effects) &&
+                type == value.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(state, response, broadcast, forward, pipe, effects, type);
+    }
+
     enum ResponseType {
         REPLY, NO_REPLY, EMPTY_REPLY
     }
 
-    public static final class ActorValue<S extends GeneratedMessageV3, R extends GeneratedMessageV3> {
-        private final List<SideEffect> effects = new ArrayList<>();
-        private S state;
-        private R response;
-        private Broadcast<?> broadcast;
-        private Forward forward;
-        private Pipe pipe;
-
-        public ActorValue() {
-        }
-
-        public static <S, V> ActorValue at() {
-            return new ActorValue();
-        }
-
-        public ActorValue response(R value) {
-            this.response = value;
-            return this;
-        }
-
-        public ActorValue state(S state) {
-            this.state = state;
-            return this;
-        }
-
-        public ActorValue flow(Broadcast broadcast) {
-            this.broadcast = broadcast;
-            return this;
-        }
-
-        public ActorValue flow(Forward forward) {
-            this.forward = forward;
-            return this;
-        }
-
-        public ActorValue flow(Pipe pipe) {
-            this.pipe = pipe;
-            return this;
-        }
-
-        public ActorValue flow(SideEffect effect) {
-            this.effects.add(effect);
-            return this;
-        }
-
-        public ActorValue flow(List<SideEffect> effects) {
-            this.effects.addAll(effects);
-            return this;
-        }
-
-        public Value reply() {
-            return new Value(this.response, this.state, this.broadcast, this.forward, this.pipe, this.effects, ResponseType.REPLY);
-        }
-
-        public Value noReply() {
-            return new Value(this.response, this.state, this.broadcast, this.forward, this.pipe, this.effects, ResponseType.NO_REPLY);
-        }
-
-        public Value empty() {
-            return new Value();
-        }
-    }
 }

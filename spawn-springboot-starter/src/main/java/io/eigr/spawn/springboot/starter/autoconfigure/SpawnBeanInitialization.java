@@ -1,5 +1,6 @@
 package io.eigr.spawn.springboot.starter.autoconfigure;
 
+import io.eigr.spawn.springboot.internal.GlobalEnvironment;
 import io.eigr.spawn.springboot.internal.SpawnActorController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +19,7 @@ public class SpawnBeanInitialization {
     public SpawnBeanInitialization(SpawnActorController actorController, Environment env) {
         this.env = env;
         this.actorController = actorController;
+        GlobalEnvironment.setEnvironment(env);
     }
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) throws Exception {

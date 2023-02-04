@@ -8,6 +8,7 @@ import io.eigr.functions.protocol.Protocol;
 import io.eigr.functions.protocol.actors.ActorOuterClass;
 import io.eigr.spawn.springboot.internal.exceptions.ActorInvokeException;
 import io.eigr.spawn.springboot.starter.ActorContext;
+import io.eigr.spawn.springboot.starter.InvocationOpts;
 import io.eigr.spawn.springboot.starter.Value;
 import io.eigr.spawn.springboot.starter.autoconfigure.SpawnProperties;
 import io.eigr.spawn.springboot.internal.exceptions.ActorNotFoundException;
@@ -132,16 +133,28 @@ public final class SpawnActorController {
         throw new ActorInvokeException("Action result is null");
     }
 
-    public <T extends GeneratedMessageV3> Object invoke(String actor, String cmd, Class<T> outputType) throws Exception {
-        return invokeActor(actor, cmd, Empty.getDefaultInstance(), outputType);
+    public <T extends GeneratedMessageV3> Object invoke(String actor, String cmd, Class<T> outputType, Optional<InvocationOpts> opts) throws Exception {
+        return invokeActor(actor, cmd, Empty.getDefaultInstance(), outputType, opts);
     }
 
-    public <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invoke(String actor, String cmd, S value, Class<T> outputType) throws Exception {
-        return invokeActor(actor, cmd, value, outputType);
+    public <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invoke(String actor, String cmd, S value, Class<T> outputType, Optional<InvocationOpts> opts) throws Exception {
+        return invokeActor(actor, cmd, value, outputType, opts);
     }
 
-    private <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invokeActor(String actor, String cmd, S argument, Class<T> outputType) throws Exception {
+    private <T extends GeneratedMessageV3, S extends GeneratedMessageV3> Object invokeActor(String actor, String cmd, S argument, Class<T> outputType, Optional<InvocationOpts> options) throws Exception {
         Objects.requireNonNull(actorSystem, "ActorSystem not initialized!");
+        Protocol.InvocationRequest.Builder invocationRequestBuilder = Protocol.InvocationRequest.newBuilder();
+
+        if (options.isPresent()) {
+            InvocationOpts opts = options.get();
+            invocationRequestBuilder.setAsync(opts.isAsync());
+
+            if (opts.getDelay().isPresent() && !opts.getScheduledTo().isPresent()) {
+                invocationRequestBuilder.setScheduledTo(opts.getDelay().get());
+            } else if (opts.getScheduledTo().isPresent()) {
+                invocationRequestBuilder.setScheduledTo(opts.getScheduleTimeInLong());
+            }
+        }
 
         final ActorOuterClass.Actor actorRef = ActorOuterClass.Actor.newBuilder()
                 .setId(
@@ -153,15 +166,14 @@ public final class SpawnActorController {
 
         Any commandArg = Any.pack(argument);
 
-        Protocol.InvocationRequest invocationRequest = Protocol.InvocationRequest.newBuilder()
-                .setAsync(false)
+        invocationRequestBuilder
                 .setSystem(actorSystem)
                 .setActor(actorRef)
                 .setCommandName(cmd)
                 .setValue(commandArg)
                 .build();
 
-        Protocol.InvocationResponse resp = spawnClient.invoke(invocationRequest);
+        Protocol.InvocationResponse resp = spawnClient.invoke(invocationRequestBuilder.build());
         final Protocol.RequestStatus status = resp.getStatus();
         switch (status.getStatus()) {
             case UNKNOWN:

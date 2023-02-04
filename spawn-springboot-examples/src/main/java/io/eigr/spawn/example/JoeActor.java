@@ -22,14 +22,14 @@ public class JoeActor {
         log.info("Received invocation. Context: {}", context);
         if (context.getState().isPresent()) {
             MyState state = context.getState().get();
-            return Value.ActorValue.<MyState, MyBusinessMessage>at()
+            return Value.<MyState, MyBusinessMessage>at()
                     .state(state)
                     .response(MyBusinessMessage.newBuilder()
                             .setValue(state.getValue())
                             .build())
                     .reply();
         }
-        return Value.ActorValue.at()
+        return Value.at()
                 .empty();
     }
 
@@ -51,7 +51,7 @@ public class JoeActor {
                 .setValue(value)
                 .build();
 
-        return Value.ActorValue.at()
+        return Value.at()
                 .response(resultValue)
                 .state(updateState(value))
                 .reply();

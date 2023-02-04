@@ -1,7 +1,9 @@
 package io.eigr.spawn.example.benchmark;
 
 import io.eigr.spawn.example.App;
+import io.eigr.spawn.example.MyBusinessMessage;
 import io.eigr.spawn.example.MyState;
+import io.eigr.spawn.springboot.starter.ActionRequest;
 import io.eigr.spawn.springboot.starter.SpawnSystem;
 import org.junit.runner.RunWith;
 import org.openjdk.jmh.annotations.*;
@@ -38,14 +40,17 @@ public class ActorInvocationGetStateBenchmark extends AbstractBenchmark {
     public void setupBenchmark() throws Exception {
         this.context = new SpringApplication(App.class).run();
         this.actorSystem = this.context.getBean(SpawnSystem.class);
-
         this.actorSystem.registerAllActors();
     }
 
     @Benchmark
     public void invokeGetStateOnSingletonActor() {
         try {
-            actorSystem.invoke(ACTOR_NAME, "get", MyState.class);
+            ActionRequest request = ActionRequest.of(ACTOR_NAME, "get")
+                    .responseType(MyBusinessMessage.class)
+                    .build();
+
+            actorSystem.invoke(request);
         } catch (Exception e) {
             LOGGER.error("Error on make request to Actor", e);
         }

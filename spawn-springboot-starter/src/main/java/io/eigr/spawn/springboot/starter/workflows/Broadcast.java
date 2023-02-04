@@ -14,7 +14,7 @@ public final class Broadcast<T extends GeneratedMessageV3> {
     private final Optional<String> command;
     private final T payload;
 
-    private Broadcast( Optional<String> channel,  Optional<String> command, T payload) {
+    private Broadcast(Optional<String> channel,  Optional<String> command, T payload) {
         this.channel = channel;
         this.command = command;
         this.payload = payload;
@@ -69,5 +69,18 @@ public final class Broadcast<T extends GeneratedMessageV3> {
         sb.append(", payload=").append(payload);
         sb.append('}');
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Broadcast<?> broadcast = (Broadcast<?>) o;
+        return Objects.equals(channel, broadcast.channel) && Objects.equals(command, broadcast.command) && Objects.equals(payload, broadcast.payload);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(channel, command, payload);
     }
 }

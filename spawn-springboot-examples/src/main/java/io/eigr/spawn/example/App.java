@@ -1,18 +1,19 @@
 package io.eigr.spawn.example;
 
-import lombok.extern.log4j.Log4j2;
+import io.eigr.spawn.springboot.starter.ActionRequest;
+import io.eigr.spawn.springboot.starter.ActionResponse;
 import io.eigr.spawn.springboot.starter.SpawnSystem;
 import io.eigr.spawn.springboot.starter.autoconfigure.EnableSpawn;
-
-import org.springframework.boot.SpringApplication;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
 
-import java.time.Instant;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.stream.IntStream;
 
@@ -55,6 +56,7 @@ public class App {
                     ChronoUnit.MILLIS.between(instant, Instant.now()));
         }
     }
+
     private void sequentialSumInvokes(SpawnSystem actorSystem, int actors_iterations, int requestCount) {
         IntStream callStream = IntStream.range(0, actors_iterations);
 
@@ -65,9 +67,15 @@ public class App {
                     .forEach(index -> {
                         try {
                             log.info("Let's invoke {}", actorName);
-                            MyBusinessMessage input = MyBusinessMessage.newBuilder().setValue(1).build();
 
-                            actorSystem.invoke(actorName, "sum", input, MyBusinessMessage.class);
+                            ActionRequest request = ActionRequest.of()
+                                    .actorName(actorName)
+                                    .action("sum")
+                                    .value(MyBusinessMessage.newBuilder().setValue(1).build())
+                                    .responseType(MyBusinessMessage.class)
+                                    .build();
+
+                            actorSystem.invoke(request);
                         } catch (Exception e) {
                             throw new RuntimeException(e);
                         }
@@ -86,15 +94,26 @@ public class App {
                     .forEach(index -> {
                         try {
                             Instant noRequest = Instant.now();
-                            MyBusinessMessage input = MyBusinessMessage.newBuilder().setValue(1).build();
-                            MyBusinessMessage result = (MyBusinessMessage)
-                                    actorSystem.invoke(actorName, "sum", input, MyBusinessMessage.class);
+                            ActionRequest request = ActionRequest.of(actorName, "sum")
+                                    .value(
+                                            MyBusinessMessage.newBuilder()
+                                                    .setValue(1).build()
+                                    )
+                                    .responseType(MyBusinessMessage.class)
+                                    .build();
+
+
+                            ActionResponse response = actorSystem.invoke(request);
+                            MyBusinessMessage result = (MyBusinessMessage) response.getValue().get();
                             log.info("Actor Invocation No Cached Request Time Elapsed: {}ms",
                                     ChronoUnit.MILLIS.between(noRequest, Instant.now()));
 
-
                             Instant cachedRequest = Instant.now();
-                            actorSystem.invoke(actorName, "get", MyState.class);
+                            ActionRequest getRequest = ActionRequest.of(actorName, "sum")
+                                    .responseType(MyState.class)
+                                    .build();
+
+                            actorSystem.invoke(getRequest);
                             log.info("Actor Invocation Cached Request Time Elapsed: {}ms",
                                     ChronoUnit.MILLIS.between(cachedRequest, Instant.now()));
                         } catch (Exception e) {

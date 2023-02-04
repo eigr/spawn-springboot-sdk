@@ -2,6 +2,7 @@ package io.eigr.spawn.example.benchmark;
 
 import io.eigr.spawn.example.App;
 import io.eigr.spawn.example.MyBusinessMessage;
+import io.eigr.spawn.springboot.starter.ActionRequest;
 import io.eigr.spawn.springboot.starter.SpawnSystem;
 import org.junit.runner.RunWith;
 import org.openjdk.jmh.annotations.*;
@@ -44,11 +45,12 @@ public class ActorInvocationUpdateStateSingleShotBenchmark extends AbstractBench
     @Benchmark
     public void invokeUpdateStateOnSingletonActor() {
         try {
-            MyBusinessMessage input = MyBusinessMessage.newBuilder()
-                    .setValue(1)
+            ActionRequest request = ActionRequest.of(ACTOR_NAME, "sum")
+                    .value(MyBusinessMessage.newBuilder().setValue(1).build())
+                    .responseType(MyBusinessMessage.class)
                     .build();
 
-            actorSystem.invoke(ACTOR_NAME, "sum", input, MyBusinessMessage.class);
+            actorSystem.invoke(request);
         } catch (Exception e) {
             LOGGER.error("Error on make request to Actor", e);
         }

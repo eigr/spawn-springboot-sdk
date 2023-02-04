@@ -31,7 +31,7 @@ public class AbstractActor {
                 .setValue(value)
                 .build();
 
-        return Value.ActorValue.at()
+        return Value.at()
                 .response(resultValue)
                 .state(updateState(value))
                 .reply();
