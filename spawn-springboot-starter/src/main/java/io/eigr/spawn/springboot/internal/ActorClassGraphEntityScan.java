@@ -3,7 +3,7 @@ package io.eigr.spawn.springboot.internal;
 import io.eigr.functions.protocol.actors.ActorOuterClass;
 import io.eigr.spawn.springboot.starter.ActorKind;
 import io.eigr.spawn.springboot.starter.annotations.Action;
-import io.eigr.spawn.springboot.starter.annotations.ActorEntity;
+import io.eigr.spawn.springboot.starter.annotations.Actor;
 import io.eigr.spawn.springboot.starter.annotations.TimerAction;
 import io.eigr.spawn.springboot.starter.autoconfigure.SpawnProperties;
 import io.github.classgraph.ClassGraph;
@@ -74,10 +74,10 @@ public final class ActorClassGraphEntityScan implements EntityScan {
     }
 
     private List<Entity> getEntities() {
-        final List<Class<?>> actorEntities = getClassAnnotationWith(ActorEntity.class);
+        final List<Class<?>> actorEntities = getClassAnnotationWith(Actor.class);
 
         return actorEntities.stream().map(entity -> {
-                    ActorEntity actor = entity.getAnnotation(ActorEntity.class);
+                    Actor actor = entity.getAnnotation(Actor.class);
 
                     String actorBeanName = entity.getSimpleName();
                     String actorName = getActorName(actor, actorBeanName);
@@ -236,7 +236,7 @@ public final class ActorClassGraphEntityScan implements EntityScan {
         return outputType;
     }
 
-    private String getActorName(ActorEntity actor, String beanName) {
+    private String getActorName(Actor actor, String beanName) {
         if (isNullOrEmpty(actor)) {
             return beanName;
         }
@@ -244,7 +244,7 @@ public final class ActorClassGraphEntityScan implements EntityScan {
         return actor.name();
     }
 
-    private boolean isNullOrEmpty(ActorEntity actor) {
+    private boolean isNullOrEmpty(Actor actor) {
         return (Objects.isNull(actor.name()) || actor.name().isEmpty());
     }
 

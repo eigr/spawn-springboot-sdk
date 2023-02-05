@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public @interface ActorEntity {
+public @interface Actor {
 
     String value() default "";
 

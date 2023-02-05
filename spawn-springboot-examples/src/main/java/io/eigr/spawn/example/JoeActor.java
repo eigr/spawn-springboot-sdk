@@ -1,36 +1,25 @@
 package io.eigr.spawn.example;
 
 import io.eigr.spawn.springboot.starter.ActorContext;
+import io.eigr.spawn.springboot.starter.ActorKind;
 import io.eigr.spawn.springboot.starter.Value;
 import io.eigr.spawn.springboot.starter.annotations.Action;
-import io.eigr.spawn.springboot.starter.annotations.ActorEntity;
-import io.eigr.spawn.springboot.starter.ActorKind;
+import io.eigr.spawn.springboot.starter.annotations.Actor;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Optional;
 
 @Log4j2
-@ActorEntity(
-        name = "joe",
-        kind = ActorKind.SINGLETON,
-        stateType = MyState.class,
-        snapshotTimeout = 5000,
-        deactivatedTimeout = 10000)
+@Actor(name = "joe", kind = ActorKind.SINGLETON, stateType = MyState.class, snapshotTimeout = 5000, deactivatedTimeout = 10000)
 public class JoeActor {
     @Action
     public Value get(ActorContext<MyState> context) {
         log.info("Received invocation. Context: {}", context);
         if (context.getState().isPresent()) {
             MyState state = context.getState().get();
-            return Value.<MyState, MyBusinessMessage>at()
-                    .state(state)
-                    .response(MyBusinessMessage.newBuilder()
-                            .setValue(state.getValue())
-                            .build())
-                    .reply();
+            return Value.<MyState, MyBusinessMessage>at().state(state).response(MyBusinessMessage.newBuilder().setValue(state.getValue()).build()).reply();
         }
-        return Value.at()
-                .empty();
+        return Value.at().empty();
     }
 
     @Action(name = "sum", inputType = MyBusinessMessage.class)
@@ -46,21 +35,14 @@ public class JoeActor {
             value = msg.getValue();
         }
 
-         log.info("New Value is {}", value);
-        MyBusinessMessage resultValue = MyBusinessMessage.newBuilder()
-                .setValue(value)
-                .build();
+        log.info("New Value is {}", value);
+        MyBusinessMessage resultValue = MyBusinessMessage.newBuilder().setValue(value).build();
 
-        return Value.at()
-                .response(resultValue)
-                .state(updateState(value))
-                .reply();
+        return Value.at().response(resultValue).state(updateState(value)).reply();
     }
 
     private MyState updateState(int value) {
-        return MyState.newBuilder()
-                .setValue(value)
-                .build();
+        return MyState.newBuilder().setValue(value).build();
     }
 
 }
