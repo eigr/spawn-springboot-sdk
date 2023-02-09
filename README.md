@@ -8,21 +8,38 @@ native Actor model.
 
 For a broader understanding of Spawn please consult its official [repository](https://github.com/eigr-labs/spawn).
 
-## Installation
-
-To proceed, create a container and send it to a container registry that will be accessible via Kubernetes in the future. This can be done by executing the following command in the application directory via terminal:
-
-```
-mvn install
-```
-
-This command will compile the maven application, and thanks to the jib Maven plugin, it will also publish the container image in your docker hub registry :)
-
-
 ## Getting Started
 
 The Spawn Springboot SDK allows you to configure a conventional Spring application to use the Spawn Actor Model. 
 In the sections below you will see how to do this.
+
+You'll need to make sure Spawn Proxy service is up and running.
+With `docker-compose` you can define:
+
+> **_NOTE:_** _using docker is recommended for `dev purposes only`, see [spawn deploy](https://github.com/eigr/spawn#getting-started) for production examples._
+
+```yml
+version: "3.8"
+
+services:
+  spawn-proxy:
+    image: eigr/spawn-proxy:0.5.0
+    restart: always
+    environment:
+      PROXY_APP_NAME: spawn
+      PROXY_HTTP_PORT: 9001
+      PROXY_DATABASE_TYPE: mysql # postgres or others can be used
+      PROXY_DATABASE_NAME: eigr-functions-db
+      PROXY_DATABASE_USERNAME: admin 
+      PROXY_DATABASE_SECRET: password
+      PROXY_DATABASE_HOST: localhost
+      PROXY_DATABASE_PORT: 5432
+      SPAWN_STATESTORE_KEY: 3Jnb0hZiHIzHTOih7t2cTEPEpY98Tu1wvQkPfq/XwqE=
+      USER_FUNCTION_HOST: 0.0.0.0 # Your Java Springboot application runtime host
+      USER_FUNCTION_PORT: 8090 # Your Java Springboot application runtime exposed port
+    ports:
+      - "9001:9001"
+```
 
 ### Maven Setup
 First add the following dependency to your `pom.xml` file.
@@ -324,12 +341,26 @@ public class App {
 1. Enables the Spawn Actor system
 2. Indicates in which package your actors will be searched. This is a Spring annotation and is for finding any beans your application declares.
 3. All interaction with actors takes place through the `SpawnSystem` class. SpawnSystem in turn is a normal Spring Bean and can be injected into any Spring class normally, in the above case we prefer to retrieve it through Spring's own context with ***ctx.getBean(SpawnSystem.class)***.
-4. To call your actors you will need to send the data type you defined as a protobuf.
-5. Use the invoke method to perform the actions you defined on your actors. This method must take the following arguments:
-   * **name**: The name of the actor registered in the Spawn ActorSystem. This is done via ActorEntity annotation on your Actor.
-   * **method**: The name of the method/action defined in your actor. This is done via the Command annotation on your Actor.
-   * **arg**: The actual payload to be sent to the Actor action you want to call.
-   * **returnType**: The return type of the action performed by the Actor (the actual type that will be returned and not the Value type used only as a factory for the return type).
+4. To call your actors you will need to send the data type you defined as a protobuf via ActionRequest class.
+5. Use the invoke method to perform the actions you defined on your actors.
 
 The complete example code can be found [here](https://github.com/eigr-labs/spawn-springboot-sdk/tree/main/spawn-springboot-examples).
 
+## **Documentation**
+
+- [Actor options](./docs/actor-options.md)
+   - [Singleton](./docs/actor-options.md#singleton-actor)
+   - [Abstract](./docs/actor-options.md#abstract-actor)
+   - [Pooled](./docs/actor-options.md#pooled-actor)
+   - [Default Actions](./docs/actor-options.md#default-actions)
+- [Actor workflows](./docs/actor-workflows.md)
+
+## **Examples**
+
+You can check [test folder](./test) to see some examples
+
+## **Environment variables:**
+
+- `PROXY_HTTP_PORT` This is the port of spawn proxy service
+- `PROXY_HTTP_HOST` This is the host of spawn proxy service
+- `USER_FUNCTION_PORT` This is the port that your service will expose to communicate with Spawn
