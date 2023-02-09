@@ -69,7 +69,7 @@ public class App {
                             log.info("Let's invoke {}", actorName);
 
                             ActionRequest request =
-                                    ActionRequest.<MyBusinessMessage, MyBusinessMessage>of()
+                                    ActionRequest.of()
                                             .actorName(actorName)
                                             .action("sum")
                                             .value(MyBusinessMessage.newBuilder().setValue(1).build())
