@@ -324,7 +324,7 @@ public class App {
                 ActorResponse sumResult = actorSystem.invoke(actionRequest); // 5
                 log.info("Actor invoke Sum Actor Action value result: {}", sumResult.getValue().get());
 
-               ActionRequest getRequest = ActionRequest.of(actorName, "sum")
+               ActionRequest getRequest = ActionRequest.of(actorName, "get")
                        .responseType(MyState.class)
                        .build();
 
