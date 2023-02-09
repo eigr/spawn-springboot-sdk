@@ -68,12 +68,12 @@ public class App {
                         try {
                             log.info("Let's invoke {}", actorName);
 
-                            ActionRequest request = ActionRequest.of()
-                                    .actorName(actorName)
-                                    .action("sum")
-                                    .value(MyBusinessMessage.newBuilder().setValue(1).build())
-                                    .responseType(MyBusinessMessage.class)
-                                    .build();
+                            ActionRequest request =
+                                    ActionRequest.<MyBusinessMessage, MyBusinessMessage>of()
+                                            .actorName(actorName)
+                                            .action("sum")
+                                            .value(MyBusinessMessage.newBuilder().setValue(1).build())
+                                            .build();
 
                             actorSystem.invoke(request);
                         } catch (Exception e) {

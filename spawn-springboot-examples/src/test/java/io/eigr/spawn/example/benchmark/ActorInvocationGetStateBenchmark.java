@@ -2,7 +2,6 @@ package io.eigr.spawn.example.benchmark;
 
 import io.eigr.spawn.example.App;
 import io.eigr.spawn.example.MyBusinessMessage;
-import io.eigr.spawn.example.MyState;
 import io.eigr.spawn.springboot.starter.ActionRequest;
 import io.eigr.spawn.springboot.starter.SpawnSystem;
 import org.junit.runner.RunWith;
