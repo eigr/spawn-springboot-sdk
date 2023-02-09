@@ -1,16 +1,14 @@
 package io.eigr.spawn.example;
 
+import io.eigr.spawn.example.actors.AbstractActor;
 import io.eigr.spawn.springboot.starter.ActionRequest;
 import io.eigr.spawn.springboot.starter.ActionResponse;
 import io.eigr.spawn.springboot.starter.SpawnSystem;
 import io.eigr.spawn.springboot.starter.autoconfigure.EnableSpawn;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -30,21 +28,14 @@ public class App {
         SpringApplication.run(App.class, args);
     }
 
-    @Bean
+    /*@Bean
     public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
         return args -> {
             SpawnSystem actorSystem = ctx.getBean(SpawnSystem.class);
             createActors(actorSystem, actors_iterations);
-
-            //Thread.sleep(1000);
-
-            //sequentialSumInvokes(actorSystem, actors_iterations, requestCount);
-
-            //Thread.sleep(1000);
-
-            //parallelSumAndGetInvokes(actorSystem, actors_iterations, requestCount);
+            sequentialSumInvokes(actorSystem, actors_iterations, requestCount);
         };
-    }
+    }*/
 
     private void createActors(SpawnSystem actorSystem, int interations) throws Exception {
         for (int i = 0; i < actors_iterations; i++) {
@@ -73,6 +64,7 @@ public class App {
                                             .actorName(actorName)
                                             .action("sum")
                                             .value(MyBusinessMessage.newBuilder().setValue(1).build())
+                                            .responseType(MyBusinessMessage.class)
                                             .build();
 
                             actorSystem.invoke(request);

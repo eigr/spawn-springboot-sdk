@@ -23,7 +23,10 @@ public class ActionRequest<Req extends GeneratedMessageV3, Resp extends Generate
 
     private Optional<InvocationOpts> opts;
 
-    private ActionRequest(){}
+    private ActionRequest(){
+        this.value = Optional.empty();
+        this.opts = Optional.empty();
+    }
 
     private ActionRequest(String actorName, String action){
         this.actorName = actorName;

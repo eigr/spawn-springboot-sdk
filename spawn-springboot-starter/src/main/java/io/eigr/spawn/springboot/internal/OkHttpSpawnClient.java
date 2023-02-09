@@ -133,7 +133,6 @@ public class OkHttpSpawnClient implements SpawnClient {
         return Protocol.InvocationResponse
                 .parseFrom(Objects.requireNonNull(callInvocationResponse.body()).bytes());
     }
-
     private String makeURLForSystemAndActor(String systemName, String actorName) {
         String uri = String.format("/api/v1/system/%s/actors/%s/invoke", systemName, actorName);
         return makeURLFrom(uri);

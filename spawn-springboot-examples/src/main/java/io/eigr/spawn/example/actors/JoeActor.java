@@ -1,5 +1,7 @@
-package io.eigr.spawn.example;
+package io.eigr.spawn.example.actors;
 
+import io.eigr.spawn.example.MyBusinessMessage;
+import io.eigr.spawn.example.MyState;
 import io.eigr.spawn.springboot.starter.ActorContext;
 import io.eigr.spawn.springboot.starter.ActorKind;
 import io.eigr.spawn.springboot.starter.Value;

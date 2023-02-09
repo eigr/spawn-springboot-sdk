@@ -1,5 +1,6 @@
 package io.eigr.spawn.example.benchmark;
 
+import com.google.protobuf.GeneratedMessageV3;
 import io.eigr.spawn.example.App;
 import io.eigr.spawn.example.MyBusinessMessage;
 import io.eigr.spawn.springboot.starter.ActionRequest;
