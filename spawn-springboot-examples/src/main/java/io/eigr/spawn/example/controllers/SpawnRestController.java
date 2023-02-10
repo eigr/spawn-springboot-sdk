@@ -1,7 +1,7 @@
 package io.eigr.spawn.example.controllers;
 
-import io.eigr.spawn.example.MyBusinessMessage;
 import io.eigr.spawn.example.actors.AbstractActor;
+import io.eigr.spawn.example.actors.Sum;
 import io.eigr.spawn.example.dto.ComputeRequestDTO;
 import io.eigr.spawn.example.dto.ComputeResultDTO;
 import io.eigr.spawn.springboot.starter.ActionRequest;
@@ -33,7 +33,7 @@ public class SpawnRestController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     private Mono<ComputeResultDTO> invokeActor(
             @PathVariable String name, @PathVariable String action, @RequestBody ComputeRequestDTO computeRequest) {
-        MyBusinessMessage internalBusinessMessage = MyBusinessMessage.newBuilder()
+        Sum internalBusinessMessage = Sum.newBuilder()
                 .setValue(computeRequest.getNumber())
                 .build();
 
@@ -41,7 +41,7 @@ public class SpawnRestController {
                 .actorName(name)
                 .action(action)
                 .value(internalBusinessMessage)
-                .responseType(MyBusinessMessage.class)
+                .responseType(Sum.class)
                 .build();
 
         return Mono.just(request).map(this::invoke);
@@ -52,7 +52,7 @@ public class SpawnRestController {
             ActionResponse response = actorSystem.invoke(req);
 
             if (response.getValue().isPresent()) {
-                MyBusinessMessage businessMessage = (MyBusinessMessage) response.getValue().get();
+                Sum businessMessage = (Sum) response.getValue().get();
 
                 return new ComputeResultDTO(businessMessage.getValue());
             }

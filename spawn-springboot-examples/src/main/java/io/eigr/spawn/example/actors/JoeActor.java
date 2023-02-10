@@ -1,7 +1,5 @@
 package io.eigr.spawn.example.actors;
 
-import io.eigr.spawn.example.MyBusinessMessage;
-import io.eigr.spawn.example.MyState;
 import io.eigr.spawn.springboot.starter.ActorContext;
 import io.eigr.spawn.springboot.starter.ActorKind;
 import io.eigr.spawn.springboot.starter.Value;
@@ -12,25 +10,28 @@ import lombok.extern.log4j.Log4j2;
 import java.util.Optional;
 
 @Log4j2
-@Actor(name = "joe", kind = ActorKind.SINGLETON, stateType = MyState.class, snapshotTimeout = 5000, deactivatedTimeout = 10000)
+@Actor(name = "joe", kind = ActorKind.SINGLETON, stateType = JoeState.class, snapshotTimeout = 5000, deactivatedTimeout = 10000)
 public class JoeActor {
     @Action
-    public Value get(ActorContext<MyState> context) {
+    public Value get(ActorContext<JoeState> context) {
         log.info("Received invocation. Context: {}", context);
         if (context.getState().isPresent()) {
-            MyState state = context.getState().get();
-            return Value.<MyState, MyBusinessMessage>at().state(state).response(MyBusinessMessage.newBuilder().setValue(state.getValue()).build()).reply();
+            JoeState state = context.getState().get();
+            return Value.<JoeState, Sum>at()
+                    .state(state)
+                    .response(Sum.newBuilder().setValue(state.getValue()).build())
+                    .reply();
         }
         return Value.at().empty();
     }
 
-    @Action(name = "sum", inputType = MyBusinessMessage.class)
-    public Value sum(MyBusinessMessage msg, ActorContext<MyState> context) {
+    @Action(name = "sum", inputType = Sum.class)
+    public Value sum(Sum msg, ActorContext<JoeState> context) {
         log.info("Received invocation. Message: {}. Context: {}", msg, context);
         int value = 1;
         if (context.getState().isPresent()) {
             log.info("State is present and value is {}", context.getState().get());
-            Optional<MyState> oldState = context.getState();
+            Optional<JoeState> oldState = context.getState();
             value = oldState.get().getValue() + msg.getValue();
         } else {
             //log.info("State is NOT present. Msg getValue is {}", msg.getValue());
@@ -38,13 +39,13 @@ public class JoeActor {
         }
 
         log.info("New Value is {}", value);
-        MyBusinessMessage resultValue = MyBusinessMessage.newBuilder().setValue(value).build();
+        Sum resultValue = Sum.newBuilder().setValue(value).build();
 
         return Value.at().response(resultValue).state(updateState(value)).reply();
     }
 
-    private MyState updateState(int value) {
-        return MyState.newBuilder().setValue(value).build();
+    private JoeState updateState(int value) {
+        return JoeState.newBuilder().setValue(value).build();
     }
 
 }

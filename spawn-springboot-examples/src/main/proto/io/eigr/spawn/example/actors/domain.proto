@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package io.eigr.spawn.example;
+
+option java_multiple_files = true;
+option java_package = "io.eigr.spawn.example.actors";
+option java_outer_classname = "DomainExampleProtos";
+
+// This is domain events
+message Sum {
+  int32 value = 1;
+}
