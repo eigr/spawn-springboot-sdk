@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 @Log4j2
 @RestController
 @RequestMapping("/api/v1")
-public class SpawnRestController {
+public class ApiController {
 
     @Autowired
     private SpawnSystem actorSystem;
