@@ -50,9 +50,10 @@ public class SpawnRestController {
     private ComputeResultDTO invoke(ActionRequest req) {
         try {
             ActionResponse response = actorSystem.invoke(req);
-            MyBusinessMessage businessMessage = (MyBusinessMessage) response.getValue().get();
 
             if (response.getValue().isPresent()) {
+                MyBusinessMessage businessMessage = (MyBusinessMessage) response.getValue().get();
+
                 return new ComputeResultDTO(businessMessage.getValue());
             }
         } catch (Exception e) {
