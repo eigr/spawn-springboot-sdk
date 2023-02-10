@@ -1,7 +1,7 @@
 package io.eigr.spawn.example.benchmark;
 
 import io.eigr.spawn.example.App;
-import io.eigr.spawn.example.MyBusinessMessage;
+import io.eigr.spawn.example.actors.Sum;
 import io.eigr.spawn.springboot.starter.ActionRequest;
 import io.eigr.spawn.springboot.starter.SpawnSystem;
 import org.junit.runner.RunWith;
@@ -38,7 +38,6 @@ public class ActorInvocationUpdateStateBenchmark extends AbstractBenchmark {
     public void setupBenchmark() throws Exception {
         this.context = new SpringApplication(App.class).run();
         this.actorSystem = this.context.getBean(SpawnSystem.class);
-
         this.actorSystem.registerAllActors();
     }
 
@@ -48,8 +47,8 @@ public class ActorInvocationUpdateStateBenchmark extends AbstractBenchmark {
             ActionRequest request = ActionRequest.of()
                     .actorName(ACTOR_NAME)
                     .action("sum")
-                    .value(MyBusinessMessage.newBuilder().setValue(1).build())
-                    .responseType(MyBusinessMessage.class)
+                    .value(Sum.newBuilder().setValue(1).build())
+                    .responseType(Sum.class)
                     .build();
 
             actorSystem.invoke(request);

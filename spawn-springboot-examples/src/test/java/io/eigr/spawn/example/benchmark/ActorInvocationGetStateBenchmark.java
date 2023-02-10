@@ -1,7 +1,7 @@
 package io.eigr.spawn.example.benchmark;
 
 import io.eigr.spawn.example.App;
-import io.eigr.spawn.example.MyBusinessMessage;
+import io.eigr.spawn.example.actors.Sum;
 import io.eigr.spawn.springboot.starter.ActionRequest;
 import io.eigr.spawn.springboot.starter.SpawnSystem;
 import org.junit.runner.RunWith;
@@ -46,7 +46,7 @@ public class ActorInvocationGetStateBenchmark extends AbstractBenchmark {
     public void invokeGetStateOnSingletonActor() {
         try {
             ActionRequest request = ActionRequest.of(ACTOR_NAME, "get")
-                    .responseType(MyBusinessMessage.class)
+                    .responseType(Sum.class)
                     .build();
 
             actorSystem.invoke(request);

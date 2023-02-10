@@ -1,8 +1,7 @@
 package io.eigr.spawn.example.benchmark;
 
-import com.google.protobuf.GeneratedMessageV3;
 import io.eigr.spawn.example.App;
-import io.eigr.spawn.example.MyBusinessMessage;
+import io.eigr.spawn.example.actors.Sum;
 import io.eigr.spawn.springboot.starter.ActionRequest;
 import io.eigr.spawn.springboot.starter.SpawnSystem;
 import org.junit.runner.RunWith;
@@ -39,7 +38,6 @@ public class ActorInvocationUpdateStateSingleShotBenchmark extends AbstractBench
     public void setupBenchmark() throws Exception {
         this.context = new SpringApplication(App.class).run();
         this.actorSystem = this.context.getBean(SpawnSystem.class);
-
         this.actorSystem.registerAllActors();
     }
 
@@ -47,8 +45,8 @@ public class ActorInvocationUpdateStateSingleShotBenchmark extends AbstractBench
     public void invokeUpdateStateOnSingletonActor() {
         try {
             ActionRequest request = ActionRequest.of(ACTOR_NAME, "sum")
-                    .value(MyBusinessMessage.newBuilder().setValue(1).build())
-                    .responseType(MyBusinessMessage.class)
+                    .value(Sum.newBuilder().setValue(1).build())
+                    .responseType(Sum.class)
                     .build();
 
             actorSystem.invoke(request);
@@ -56,5 +54,4 @@ public class ActorInvocationUpdateStateSingleShotBenchmark extends AbstractBench
             LOGGER.error("Error on make request to Actor", e);
         }
     }
-
 }
