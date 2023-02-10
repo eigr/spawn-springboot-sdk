@@ -357,7 +357,7 @@ The complete example code can be found [here](https://github.com/eigr-labs/spawn
 
 ## **Examples**
 
-You can check [test folder](./test) to see some examples
+You can check [test folder](./spawn-springboot-examples) to see some examples
 
 ## **Environment variables:**
 
