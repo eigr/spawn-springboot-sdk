@@ -7,5 +7,5 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ComputeResultDTO {
-    private int sumResult;
+    private int result;
 }
