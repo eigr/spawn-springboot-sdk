@@ -5,12 +5,14 @@ import io.eigr.spawn.springboot.starter.ActorKind;
 import io.eigr.spawn.springboot.starter.Value;
 import io.eigr.spawn.springboot.starter.annotations.Action;
 import io.eigr.spawn.springboot.starter.annotations.Actor;
+import io.eigr.spawn.springboot.starter.annotations.UnNamedActor;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Optional;
 
 @Log4j2
-@Actor(kind = ActorKind.ABSTRACT, stateType = AbstractState.class)
+@Actor(kind = ActorKind.UNAMED, stateType = AbstractState.class)
+@UnNamedActor(stateType = AbstractState.class)
 public class AbstractActor {
 
     @Action(name = "sum", inputType = Sum.class)

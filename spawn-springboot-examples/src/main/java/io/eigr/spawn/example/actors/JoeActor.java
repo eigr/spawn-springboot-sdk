@@ -12,6 +12,7 @@ import java.util.Optional;
 @Log4j2
 @Actor(name = "joe", kind = ActorKind.SINGLETON, stateType = JoeState.class, snapshotTimeout = 5000, deactivatedTimeout = 10000)
 public class JoeActor {
+
     @Action
     public Value get(ActorContext<JoeState> context) {
         log.info("Received invocation. Context: {}", context);

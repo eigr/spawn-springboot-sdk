@@ -2,9 +2,7 @@ package io.eigr.spawn.springboot.internal;
 
 import io.eigr.functions.protocol.actors.ActorOuterClass;
 import io.eigr.spawn.springboot.starter.ActorKind;
-import io.eigr.spawn.springboot.starter.annotations.Action;
-import io.eigr.spawn.springboot.starter.annotations.Actor;
-import io.eigr.spawn.springboot.starter.annotations.TimerAction;
+import io.eigr.spawn.springboot.starter.annotations.*;
 import io.eigr.spawn.springboot.starter.autoconfigure.SpawnProperties;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
@@ -21,6 +19,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class ActorClassGraphEntityScan implements EntityScan {
     private static final Logger log = LoggerFactory.getLogger(ActorClassGraphEntityScan.class);
@@ -33,20 +32,7 @@ public final class ActorClassGraphEntityScan implements EntityScan {
         this.properties = properties;
         this.classGraph = new ClassGraph()
                 .enableAnnotationInfo()
-                .blacklistPackages(
-                        "org.springframework",
-                        "com.typesafe",
-                        "com.google",
-                        "com.fasterxml",
-                        "org.slf4j",
-                        "org.eclipse",
-                        "com.twitter",
-                        "io.spray",
-                        "org.reactivestreams",
-                        "org.scala",
-                        "io.grpc",
-                        "io.opencensus",
-                        "org.yaml");
+                .blacklistPackages("org.springframework", "com.typesafe", "com.google", "com.fasterxml", "org.slf4j", "org.eclipse", "com.twitter", "io.spray", "org.reactivestreams", "org.scala", "io.grpc", "io.opencensus", "org.yaml");
     }
 
     @Override
@@ -61,9 +47,7 @@ public final class ActorClassGraphEntityScan implements EntityScan {
 
     public Optional<Entity> findEntity(Class type) {
         List<Entity> actors = getActors();
-        return actors.stream()
-                .filter(entity -> entity.getActorType() == type)
-                .findFirst();
+        return actors.stream().filter(entity -> entity.getActorType() == type).findFirst();
     }
 
     private List<Entity> getActors() {
@@ -74,10 +58,15 @@ public final class ActorClassGraphEntityScan implements EntityScan {
     }
 
     private List<Entity> getEntities() {
-        final List<Class<?>> actorEntities = getClassAnnotationWith(Actor.class);
+        final List<Class<?>> namedActorEntities = getClassAnnotationWith(NamedActor.class);
+        final List<Class<?>> unnamedActorEntities = getClassAnnotationWith(UnNamedActor.class);
+        final List<Class<?>> pooledActorEntities = getClassAnnotationWith(PooledActor.class);
 
-        return actorEntities.stream().map(entity -> {
+        return Stream.of(namedActorEntities, unnamedActorEntities, pooledActorEntities)
+                .flatMap(Collection::stream)
+                .map(entity -> {
                     Actor actor = entity.getAnnotation(Actor.class);
+                    // ex. if actor.getClass().isAssignableFrom(namedActorEntities.getClass());
 
                     String actorBeanName = entity.getSimpleName();
                     String actorName = getActorName(actor, actorBeanName);
@@ -104,14 +93,12 @@ public final class ActorClassGraphEntityScan implements EntityScan {
                             actions,
                             timerActions,
                             minPoolSize,
-                            maxPoolSize
-                    );
+                            maxPoolSize);
 
                     log.info("Registering Actor: {}", actorName);
                     log.debug("Registering Entity -> {}", entityType);
                     return entityType;
-                })
-                .collect(Collectors.toList());
+                }).collect(Collectors.toList());
     }
 
     private Map<String, Entity.EntityMethod> buildActions(Class<?> entity, Class<? extends Annotation> annotationType) {
@@ -122,7 +109,6 @@ public final class ActorClassGraphEntityScan implements EntityScan {
                 .collect(Collectors.toList());
 
         for (Method method : methods) {
-
             try {
                 method.setAccessible(true);
                 String commandName = getCommandName(method, annotationType);
@@ -135,15 +121,13 @@ public final class ActorClassGraphEntityScan implements EntityScan {
                         getPeriod(method, annotationType),
                         method,
                         inputType,
-                        outputType
-                );
+                        outputType);
 
                 actions.put(commandName, action);
             } catch (SecurityException e) {
                 log.error("Failure on load Actor Action", e);
             }
         }
-
         return actions;
     }
 
@@ -177,16 +161,12 @@ public final class ActorClassGraphEntityScan implements EntityScan {
 
         if (type.isAssignableFrom(Action.class)) {
             Action act = method.getAnnotation(Action.class);
-            commandName = (
-                    (!act.name().equalsIgnoreCase("")) ? act.name() : method.getName()
-            );
+            commandName = ((!act.name().equalsIgnoreCase("")) ? act.name() : method.getName());
         }
 
         if (type.isAssignableFrom(TimerAction.class)) {
             TimerAction act = method.getAnnotation(TimerAction.class);
-            commandName = (
-                    (!act.name().equalsIgnoreCase("")) ? act.name() : method.getName()
-            );
+            commandName = ((!act.name().equalsIgnoreCase("")) ? act.name() : method.getName());
         }
 
         return commandName;
@@ -197,18 +177,12 @@ public final class ActorClassGraphEntityScan implements EntityScan {
 
         if (type.isAssignableFrom(Action.class)) {
             Action act = method.getAnnotation(Action.class);
-            inputType = (
-                    !act.inputType().isAssignableFrom(Action.Default.class) ? act.inputType() :
-                            method.getParameterTypes()[0]
-            );
+            inputType = (!act.inputType().isAssignableFrom(Action.Default.class) ? act.inputType() : method.getParameterTypes()[0]);
         }
 
         if (type.isAssignableFrom(TimerAction.class)) {
             TimerAction act = method.getAnnotation(TimerAction.class);
-            inputType = (
-                    !act.inputType().isAssignableFrom(TimerAction.Default.class) ? act.inputType() :
-                            method.getParameterTypes()[0]
-            );
+            inputType = (!act.inputType().isAssignableFrom(TimerAction.Default.class) ? act.inputType() : method.getParameterTypes()[0]);
         }
 
         return inputType;
@@ -219,18 +193,12 @@ public final class ActorClassGraphEntityScan implements EntityScan {
 
         if (type.isAssignableFrom(Action.class)) {
             Action act = method.getAnnotation(Action.class);
-            outputType = (
-                    !act.outputType().isAssignableFrom(Action.Default.class) ? act.outputType() :
-                            method.getReturnType()
-            );
+            outputType = (!act.outputType().isAssignableFrom(Action.Default.class) ? act.outputType() : method.getReturnType());
         }
 
         if (type.isAssignableFrom(TimerAction.class)) {
             TimerAction act = method.getAnnotation(TimerAction.class);
-            outputType = (
-                    !act.outputType().isAssignableFrom(TimerAction.Default.class) ? act.outputType() :
-                            method.getReturnType()
-            );
+            outputType = (!act.outputType().isAssignableFrom(TimerAction.Default.class) ? act.outputType() : method.getReturnType());
         }
 
         return outputType;
@@ -250,14 +218,14 @@ public final class ActorClassGraphEntityScan implements EntityScan {
 
     private ActorOuterClass.Kind getKind(ActorKind kind) {
         switch (kind) {
-            case ABSTRACT:
-                return ActorOuterClass.Kind.ABSTRACT;
+            case UNAMED:
+                return ActorOuterClass.Kind.UNAMED;
             case POOLED:
                 return ActorOuterClass.Kind.POOLED;
             case PROXY:
                 return ActorOuterClass.Kind.PROXY;
             default:
-                return ActorOuterClass.Kind.SINGLETON;
+                return ActorOuterClass.Kind.NAMED;
         }
     }
 
@@ -267,10 +235,7 @@ public final class ActorClassGraphEntityScan implements EntityScan {
             scanner.addIncludeFilter(new AnnotationTypeFilter(annotationType));
             Set<BeanDefinition> definitions = scanner.findCandidateComponents(properties.getUserFunctionPackageName());
 
-            return definitions.stream()
-                    .map(getBeanDefinitionClass())
-                    .filter(this::isEntity)
-                    .collect(Collectors.toList());
+            return definitions.stream().map(getBeanDefinitionClass()).filter(this::isEntity).collect(Collectors.toList());
         } else {
             try (ScanResult result = classGraph.scan()) {
                 return result.getClassesWithAnnotation(annotationType.getName()).loadClasses();
