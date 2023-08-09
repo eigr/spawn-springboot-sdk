@@ -27,6 +27,9 @@ services:
       timeout: 5s
       retries: 30
     environment:
+      - PROXY_CLUSTER_STRATEGY=gossip
+      - SPAWN_USE_INTERNAL_NATS=false
+      - SPAWN_PUBSUB_ADAPTER=native
       - PROXY_HTTP_PORT=9001
       - PROXY_DATABASE_HOST=db
       - PROXY_DATABASE_TYPE=mysql
