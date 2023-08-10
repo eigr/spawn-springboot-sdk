@@ -1,16 +1,15 @@
 package io.eigr.spawn.example.actors;
 
 import io.eigr.spawn.springboot.starter.ActorContext;
-import io.eigr.spawn.springboot.starter.ActorKind;
 import io.eigr.spawn.springboot.starter.Value;
 import io.eigr.spawn.springboot.starter.annotations.Action;
-import io.eigr.spawn.springboot.starter.annotations.Actor;
+import io.eigr.spawn.springboot.starter.annotations.NamedActor;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.Optional;
 
 @Log4j2
-@Actor(name = "joe", kind = ActorKind.SINGLETON, stateType = JoeState.class, snapshotTimeout = 5000, deactivatedTimeout = 10000)
+@NamedActor(name = "joe", stateType = JoeState.class, snapshotTimeout = 5000, deactivatedTimeout = 10000)
 public class JoeActor {
 
     @Action

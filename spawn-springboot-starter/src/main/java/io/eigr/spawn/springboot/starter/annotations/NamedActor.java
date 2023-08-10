@@ -12,14 +12,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Actor
 @Component
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public @interface NamedActor {
 
-    ActorKind kind() default ActorKind.NAMED;
+    String value() default "";
+    @AliasFor("value")
+    String name() default "";
     boolean stateful() default true;
     Class<? extends GeneratedMessageV3> stateType();
     long deactivatedTimeout() default 60000;

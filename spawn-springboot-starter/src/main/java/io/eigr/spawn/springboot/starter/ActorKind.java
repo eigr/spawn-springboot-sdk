@@ -1,7 +1,7 @@
 package io.eigr.spawn.springboot.starter;
 
 public enum ActorKind {
-    UNAMED,
+    UNNAMED,
     NAMED,
     POOLED,
     PROXY
