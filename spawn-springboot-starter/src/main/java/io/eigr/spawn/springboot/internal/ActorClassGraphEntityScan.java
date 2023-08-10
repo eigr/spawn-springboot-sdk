@@ -77,16 +77,21 @@ public final class ActorClassGraphEntityScan implements EntityScan {
     }
 
     private Entity fromAnnotationToEntity(Class<?> entity, NamedActor actor) {
-
         String actorBeanName = entity.getSimpleName();
-        String actorName = getActorName((Actor) actor, actorBeanName);
-        ActorKind kind = actor.kind();
-        long deactivateTimeout = actor.deactivatedTimeout();
-        long snapshotTimeout = actor.snapshotTimeout();
-        boolean isStateful = actor.stateful();
-        Class stateType = actor.stateType();
-        int minPoolSize = actor.minPoolSize();
-        int maxPoolSize = actor.maxPoolSize();
+        String actorName;
+        if ((Objects.isNull(actor.name()) || actor.name().isEmpty())) {
+            actorName = actorBeanName;
+        } else {
+            actorName = actor.name();
+        }
+
+        final ActorKind kind = ActorKind.NAMED;
+        final long deactivateTimeout = actor.deactivatedTimeout();
+        final long snapshotTimeout = actor.snapshotTimeout();
+        final boolean isStateful = actor.stateful();
+        final Class stateType = actor.stateType();
+        final int minPoolSize = actor.minPoolSize();
+        final int maxPoolSize = actor.maxPoolSize();
 
         final Map<String, Entity.EntityMethod> actions = buildActions(entity, Action.class);
         final Map<String, Entity.EntityMethod> timerActions = buildActions(entity, TimerAction.class);
@@ -111,16 +116,21 @@ public final class ActorClassGraphEntityScan implements EntityScan {
     }
 
     private Entity fromAnnotationToEntity(Class<?> entity, UnNamedActor actor) {
-
         String actorBeanName = entity.getSimpleName();
-        String actorName = getActorName((Actor) actor, actorBeanName);
-        ActorKind kind = actor.kind();
-        long deactivateTimeout = actor.deactivatedTimeout();
-        long snapshotTimeout = actor.snapshotTimeout();
-        boolean isStateful = actor.stateful();
-        Class stateType = actor.stateType();
-        int minPoolSize = actor.minPoolSize();
-        int maxPoolSize = actor.maxPoolSize();
+        String actorName;
+        if ((Objects.isNull(actor.name()) || actor.name().isEmpty())) {
+            actorName = actorBeanName;
+        } else {
+            actorName = actor.name();
+        }
+
+        final ActorKind kind = ActorKind.UNNAMED;
+        final long deactivateTimeout = actor.deactivatedTimeout();
+        final long snapshotTimeout = actor.snapshotTimeout();
+        final boolean isStateful = actor.stateful();
+        final Class stateType = actor.stateType();
+        final int minPoolSize = actor.minPoolSize();
+        final int maxPoolSize = actor.maxPoolSize();
 
         final Map<String, Entity.EntityMethod> actions = buildActions(entity, Action.class);
         final Map<String, Entity.EntityMethod> timerActions = buildActions(entity, TimerAction.class);
@@ -139,7 +149,7 @@ public final class ActorClassGraphEntityScan implements EntityScan {
                 minPoolSize,
                 maxPoolSize);
 
-        log.info("Registering NamedActor: {}", actorName);
+        log.info("Registering UnNamedActor: {}", actorName);
         log.debug("Registering Entity -> {}", entityType);
         return entityType;
     }
@@ -147,14 +157,20 @@ public final class ActorClassGraphEntityScan implements EntityScan {
     private Entity fromAnnotationToEntity(Class<?> entity, PooledActor actor) {
 
         String actorBeanName = entity.getSimpleName();
-        String actorName = getActorName((Actor) actor, actorBeanName);
-        ActorKind kind = actor.kind();
-        long deactivateTimeout = actor.deactivatedTimeout();
-        long snapshotTimeout = actor.snapshotTimeout();
-        boolean isStateful = actor.stateful();
-        Class stateType = actor.stateType();
-        int minPoolSize = actor.minPoolSize();
-        int maxPoolSize = actor.maxPoolSize();
+        String actorName;
+        if ((Objects.isNull(actor.name()) || actor.name().isEmpty())) {
+            actorName = actorBeanName;
+        } else {
+            actorName = actor.name();
+        }
+
+        final ActorKind kind = ActorKind.POOLED;
+        final long deactivateTimeout = actor.deactivatedTimeout();
+        final long snapshotTimeout = actor.snapshotTimeout();
+        final boolean isStateful = actor.stateful();
+        final Class stateType = actor.stateType();
+        final int minPoolSize = actor.minPoolSize();
+        final int maxPoolSize = actor.maxPoolSize();
 
         final Map<String, Entity.EntityMethod> actions = buildActions(entity, Action.class);
         final Map<String, Entity.EntityMethod> timerActions = buildActions(entity, TimerAction.class);
@@ -173,7 +189,7 @@ public final class ActorClassGraphEntityScan implements EntityScan {
                 minPoolSize,
                 maxPoolSize);
 
-        log.info("Registering NamedActor: {}", actorName);
+        log.info("Registering PooledActor: {}", actorName);
         log.debug("Registering Entity -> {}", entityType);
         return entityType;
     }
@@ -281,21 +297,9 @@ public final class ActorClassGraphEntityScan implements EntityScan {
         return outputType;
     }
 
-    private String getActorName(Actor actor, String beanName) {
-        if (isNullOrEmpty(actor)) {
-            return beanName;
-        }
-
-        return actor.name();
-    }
-
-    private boolean isNullOrEmpty(Actor actor) {
-        return (Objects.isNull(actor.name()) || actor.name().isEmpty());
-    }
-
     private ActorOuterClass.Kind getKind(ActorKind kind) {
         switch (kind) {
-            case UNAMED:
+            case UNNAMED:
                 return ActorOuterClass.Kind.UNAMED;
             case POOLED:
                 return ActorOuterClass.Kind.POOLED;

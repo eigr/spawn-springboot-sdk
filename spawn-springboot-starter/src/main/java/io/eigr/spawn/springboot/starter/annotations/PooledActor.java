@@ -12,7 +12,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Actor
 @Component
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
@@ -21,7 +20,6 @@ public @interface PooledActor {
     String value() default "";
     @AliasFor("value")
     String name() default "";
-    ActorKind kind() default ActorKind.POOLED;
     boolean stateful() default true;
     Class<? extends GeneratedMessageV3> stateType();
     long deactivatedTimeout() default 60000;
