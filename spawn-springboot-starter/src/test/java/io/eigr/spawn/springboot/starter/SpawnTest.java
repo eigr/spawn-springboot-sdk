@@ -127,7 +127,7 @@ public class SpawnTest {
                         .setAsync(false)
                         .setSystem(actorSystem)
                         .setActor(makeActor("actor-test-01", 1))
-                        .setCommandName("someFunction")
+                        .setActionName("someFunction")
                         .setValue(stateValue)
                         .build();
 

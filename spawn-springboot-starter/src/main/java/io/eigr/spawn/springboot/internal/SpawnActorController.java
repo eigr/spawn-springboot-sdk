@@ -104,7 +104,7 @@ public final class SpawnActorController {
         ActorOuterClass.ActorId actorId = actorInvocationRequest.getActor();
         String actor = actorId.getName();
         String system = actorId.getSystem();
-        String commandName = actorInvocationRequest.getCommandName();
+        String commandName = actorInvocationRequest.getActionName();
 
         Any value = actorInvocationRequest.getValue();
 
@@ -169,7 +169,7 @@ public final class SpawnActorController {
         invocationRequestBuilder
                 .setSystem(actorSystem)
                 .setActor(actorRef)
-                .setCommandName(cmd)
+                .setActionName(cmd)
                 .setValue(commandArg)
                 .build();
 
@@ -307,8 +307,8 @@ public final class SpawnActorController {
                     )
                     .setMetadata(metadata)
                     .setSettings(settings)
-                    .addAllCommands(getCommands(actorEntity))
-                    .addAllTimerCommands(getTimerCommands(actorEntity))
+                    .addAllActions(getCommands(actorEntity))
+                    .addAllTimerActions(getTimerCommands(actorEntity))
                     .setState(ActorOuterClass.ActorState.newBuilder().build()) // Init with empty state
                     .build();
 
@@ -352,34 +352,34 @@ public final class SpawnActorController {
                                 .build()
                 )
                 .setSettings(settings)
-                .addAllCommands(getCommands(actorEntity))
-                .addAllTimerCommands(getTimerCommands(actorEntity))
+                .addAllActions(getCommands(actorEntity))
+                .addAllTimerActions(getTimerCommands(actorEntity))
                 .setState(ActorOuterClass.ActorState.newBuilder().build())
                 .build();
     }
 
-    private List<ActorOuterClass.Command> getCommands(Entity actorEntity) {
+    private List<ActorOuterClass.Action> getCommands(Entity actorEntity) {
         return actorEntity.getActions()
                 .values()
                 .stream()
                 .filter(v -> Entity.EntityMethodType.DIRECT.equals(v.getType()))
                 .map(action ->
-                        ActorOuterClass.Command.newBuilder()
+                        ActorOuterClass.Action.newBuilder()
                                 .setName(action.getName())
                                 .build()
                 )
                 .collect(Collectors.toList());
     }
 
-    private List<ActorOuterClass.FixedTimerCommand> getTimerCommands(Entity actorEntity) {
+    private List<ActorOuterClass.FixedTimerAction> getTimerCommands(Entity actorEntity) {
         return actorEntity.getActions()
                 .values()
                 .stream()
                 .filter(v -> Entity.EntityMethodType.TIMER.equals(v.getType()))
                 .map(action ->
-                        ActorOuterClass.FixedTimerCommand.newBuilder()
-                                .setCommand(
-                                        ActorOuterClass.Command.newBuilder()
+                        ActorOuterClass.FixedTimerAction.newBuilder()
+                                .setAction(
+                                        ActorOuterClass.Action.newBuilder()
                                                 .setName(action.getName())
                                                 .build())
                                 .setSeconds(action.getFixedPeriod())

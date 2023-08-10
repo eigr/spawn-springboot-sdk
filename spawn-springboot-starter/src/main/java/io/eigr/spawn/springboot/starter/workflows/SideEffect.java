@@ -67,7 +67,7 @@ public final class SideEffect<T extends GeneratedMessageV3> {
                                 .build())
                         .build())
                 .setAsync(true)
-                .setCommandName(command)
+                .setActionName(command)
                 .setValue(Any.pack(payload));
 
         return Protocol.SideEffect.newBuilder()

@@ -26,7 +26,7 @@ public final class Forward {
     public Protocol.Forward build() {
         return Protocol.Forward.newBuilder()
                 .setActor(this.actor)
-                .setCommandName(this.command)
+                .setActionName(this.command)
                 .build();
     }
 
