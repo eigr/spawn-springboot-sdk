@@ -15,7 +15,7 @@ services:
       - MYSQL_DATABASE=eigr-functions-db
 
   spawn-proxy:
-    image: eigr/spawn-proxy:0.1.0
+    image: eigr/spawn-proxy:1.0.0-rc.18
     depends_on:
       db:
         condition: service_healthy

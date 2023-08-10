@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Service
+@Primary
 public class OkHttpSpawnClient implements SpawnClient {
     public static final String SPAWN_MEDIA_TYPE = "application/octet-stream";
     private static final Logger log = LoggerFactory.getLogger(OkHttpSpawnClient.class);
