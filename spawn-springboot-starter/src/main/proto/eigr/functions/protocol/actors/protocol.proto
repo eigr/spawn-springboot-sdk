@@ -162,11 +162,11 @@ import "google/protobuf/any.proto";
 option java_package = "io.eigr.functions.protocol";
 option go_package = "github.com/eigr/go-support/eigr/protocol;protocol";
 
-// Context is where current and/or updated state is stored
+// Context is where current and/or updated state is stored 
 // to be transmitted to/from proxy and user function
 //
 // Params:
-//   * state: Actor state passed back and forth between proxy and user function.
+//   * state: Actor state passed back and forth between proxy and user function. 
 //   * metadata: Meta information that comes in invocations
 //   * tags: Meta information stored in the actor
 //   * caller: ActorId of who is calling target actor
@@ -186,11 +186,17 @@ message Context {
     eigr.functions.protocol.actors.ActorId self = 3;
 }
 
-// Noop is used when the input or output value of a function or method
-// does not matter to the caller of a Workflow or when the user just wants to receive
-// the Context in the request, that is,
+// Noop is used when the input or output value of a function or method 
+// does not matter to the caller of a Workflow or when the user just wants to receive 
+// the Context in the request, that is, 
 // he does not care about the input value only with the state.
 message Noop {}
+
+// JSON is an alternative that some SDKs can opt in  
+// it will bypass any type validation in spawn actors state / payloads
+message JSONType {
+    string content = 1;
+}
 
 message RegistrationRequest {
 
@@ -247,12 +253,12 @@ message ProxyInfo {
     int32 protocol_minor_version = 2;
 
     string proxy_name = 3;
-
+    
     string proxy_version = 4;
 }
 
-// When a Host Function is invoked it returns the updated state and return value to the call.
-// It can also return a number of side effects to other Actors as a result of its computation.
+// When a Host Function is invoked it returns the updated state and return value to the call. 
+// It can also return a number of side effects to other Actors as a result of its computation. 
 // These side effects will be forwarded to the respective Actors asynchronously and should not affect the Host Function's response to its caller.
 // Internally side effects is just a special kind of InvocationRequest.
 // Useful for handle handle `recipient list` and `Composed Message Processor` patterns:
@@ -271,8 +277,8 @@ message Broadcast {
     // Channel of target Actors
     string channel_group = 1;
 
-    // Command. Only Actors that have this command will run successfully
-    string command_name = 2;
+    // Action. Only Actors that have this action will run successfully
+    string action_name = 2;
 
     // Payload
     oneof payload {
@@ -281,31 +287,31 @@ message Broadcast {
     }
 }
 
-// Sends the output of a command of an Actor to the input of another command of an Actor
+// Sends the output of a action of an Actor to the input of another action of an Actor
 // Useful for handle `pipes` pattern:
 // https://www.enterpriseintegrationpatterns.com/patterns/messaging/PipesAndFilters.html
 message Pipe {
-    // Target Actor
-    string actor = 1;
+  // Target Actor
+  string actor = 1;
 
-    // Command.
-    string command_name = 2;
+  // Action. 
+  string action_name = 2;
 }
 
-// Sends the input of a command of an Actor to the input of another command of an Actor
+// Sends the input of a action of an Actor to the input of another action of an Actor
 // Useful for handle `content-basead router` pattern
 // https://www.enterpriseintegrationpatterns.com/patterns/messaging/ContentBasedRouter.html
 message Forward {
-    // Target Actor
-    string actor = 1;
+  // Target Actor
+  string actor = 1;
 
-    // Command.
-    string command_name = 2;
+  // Action. 
+  string action_name = 2;
 }
 
-// Container for archicetural message patterns
+// Container for archicetural message patterns 
 message Workflow {
-
+    
     Broadcast broadcast = 2;
 
     repeated SideEffect effects = 1;
@@ -322,11 +328,11 @@ message Workflow {
 //   * system: See ActorSystem message.
 //   * actor: The target Actor, i.e. the one that the user function is calling to perform some computation.
 //   * caller: The caller Actor
-//   * command_name: The function or method on the target Actor that will receive this request
+//   * action_name: The function or method on the target Actor that will receive this request 
 //     and perform some useful computation with the sent data.
-//   * value: This is the value sent by the user function to be computed by the request's target Actor command.
-//   * async: Indicates whether the command should be processed synchronously, where a response should be sent back to the user function,
-//            or whether the command should be processed asynchronously, i.e. no response sent to the caller and no waiting.
+//   * value: This is the value sent by the user function to be computed by the request's target Actor action.
+//   * async: Indicates whether the action should be processed synchronously, where a response should be sent back to the user function, 
+//            or whether the action should be processed asynchronously, i.e. no response sent to the caller and no waiting.
 //   * metadata: Meta information or headers
 message InvocationRequest {
 
@@ -334,7 +340,7 @@ message InvocationRequest {
 
     eigr.functions.protocol.actors.Actor actor = 2;
 
-    string command_name = 3;
+    string action_name = 3;
 
     oneof payload {
         google.protobuf.Any value = 4;
@@ -352,22 +358,22 @@ message InvocationRequest {
     bool pooled = 10;
 }
 
-// ActorInvocation is a translation message between a local invocation made via InvocationRequest
+// ActorInvocation is a translation message between a local invocation made via InvocationRequest 
 // and the real Actor that intends to respond to this invocation and that can be located anywhere in the cluster.
 //
 // Params:
 //   * actor: The ActorId handling the InvocationRequest request, also called the target Actor.
-//   * command_name: The function or method on the target Actor that will receive this request
+//   * action_name: The function or method on the target Actor that will receive this request 
 //                 and perform some useful computation with the sent data.
-//   * current_context: The current Context with current state value of the target Actor.
-//                    That is, the same as found via matching in %Actor{name: target_actor, state: %ActorState{state: value} = actor_state}.
+//   * current_context: The current Context with current state value of the target Actor. 
+//                    That is, the same as found via matching in %Actor{name: target_actor, state: %ActorState{state: value} = actor_state}. 
 //                    In this case, the Context type will contain in the value attribute the same `value` as the matching above.
-//   * payload: The value to be passed to the function or method corresponding to command_name.
+//   * payload: The value to be passed to the function or method corresponding to action_name.
 message ActorInvocation {
 
     eigr.functions.protocol.actors.ActorId actor = 1;
 
-    string command_name = 2;
+    string action_name = 2;
 
     Context current_context = 3;
 
@@ -385,7 +391,7 @@ message ActorInvocation {
 //   actor_name: The name of the Actor handling the InvocationRequest request, also called the target Actor.
 //   actor_system: The name of ActorSystem registered in Registration step.
 //   updated_context: The Context with updated state value of the target Actor after user function has processed a request.
-//   value: The value that the original request proxy will forward in response to the InvocationRequest type request.
+//   value: The value that the original request proxy will forward in response to the InvocationRequest type request. 
 //          This is the final response from the point of view of the user who invoked the Actor call and its subsequent processing.
 message ActorInvocationResponse {
 

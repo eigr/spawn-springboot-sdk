@@ -45,11 +45,11 @@ public final class Broadcast<T extends GeneratedMessageV3> {
     public Protocol.Broadcast build() {
         Protocol.Broadcast.Builder builder = Protocol.Broadcast.newBuilder();
         if (this.command.isPresent()) {
-            builder.setCommandName(this.command.get());
+            builder.setActionName(this.command.get());
         }
 
         if (this.channel.isPresent()) {
-            builder.setCommandName(this.channel.get());
+            builder.setActionName(this.channel.get());
         }
 
         if (Objects.isNull(payload)) {

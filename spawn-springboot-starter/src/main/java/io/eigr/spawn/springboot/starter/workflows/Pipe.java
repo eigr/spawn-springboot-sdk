@@ -30,7 +30,7 @@ public final class Pipe {
     public Protocol.Pipe build() {
         return Protocol.Pipe.newBuilder()
                 .setActor(this.actor)
-                .setCommandName(this.command)
+                .setActionName(this.command)
                 .build();
     }
 
