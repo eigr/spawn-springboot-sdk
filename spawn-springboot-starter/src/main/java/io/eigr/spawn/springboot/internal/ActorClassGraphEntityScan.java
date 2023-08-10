@@ -58,47 +58,124 @@ public final class ActorClassGraphEntityScan implements EntityScan {
     }
 
     private List<Entity> getEntities() {
-        final List<Class<?>> namedActorEntities = getClassAnnotationWith(NamedActor.class);
-        final List<Class<?>> unnamedActorEntities = getClassAnnotationWith(UnNamedActor.class);
-        final List<Class<?>> pooledActorEntities = getClassAnnotationWith(PooledActor.class);
+        List<Entity> namedActorEntities = getClassAnnotationWith(NamedActor.class)
+                .stream().map(entity -> fromAnnotationToEntity(entity, entity.getAnnotation(NamedActor.class)))
+                .collect(Collectors.toList());
+
+        List<Entity> unnamedActorEntities = getClassAnnotationWith(UnNamedActor.class)
+                .stream().map(entity -> fromAnnotationToEntity(entity, entity.getAnnotation(UnNamedActor.class)))
+                .collect(Collectors.toList());
+
+        List<Entity> pooledActorEntities = getClassAnnotationWith(PooledActor.class)
+                .stream()
+                .map(entity -> fromAnnotationToEntity(entity, entity.getAnnotation(PooledActor.class)))
+                .collect(Collectors.toList());
 
         return Stream.of(namedActorEntities, unnamedActorEntities, pooledActorEntities)
                 .flatMap(Collection::stream)
-                .map(entity -> {
-                    Actor actor = entity.getAnnotation(Actor.class);
-                    // ex. if actor.getClass().isAssignableFrom(namedActorEntities.getClass());
+                .collect(Collectors.toList());
+    }
 
-                    String actorBeanName = entity.getSimpleName();
-                    String actorName = getActorName(actor, actorBeanName);
-                    ActorKind kind = actor.kind();
-                    long deactivateTimeout = actor.deactivatedTimeout();
-                    long snapshotTimeout = actor.snapshotTimeout();
-                    boolean isStateful = actor.stateful();
-                    Class stateType = actor.stateType();
-                    int minPoolSize = actor.minPoolSize();
-                    int maxPoolSize = actor.maxPoolSize();
+    private Entity fromAnnotationToEntity(Class<?> entity, NamedActor actor) {
 
-                    final Map<String, Entity.EntityMethod> actions = buildActions(entity, Action.class);
-                    final Map<String, Entity.EntityMethod> timerActions = buildActions(entity, TimerAction.class);
+        String actorBeanName = entity.getSimpleName();
+        String actorName = getActorName((Actor) actor, actorBeanName);
+        ActorKind kind = actor.kind();
+        long deactivateTimeout = actor.deactivatedTimeout();
+        long snapshotTimeout = actor.snapshotTimeout();
+        boolean isStateful = actor.stateful();
+        Class stateType = actor.stateType();
+        int minPoolSize = actor.minPoolSize();
+        int maxPoolSize = actor.maxPoolSize();
 
-                    Entity entityType = new Entity(
-                            actorName,
-                            entity,
-                            getKind(kind),
-                            stateType,
-                            actorBeanName,
-                            isStateful,
-                            deactivateTimeout,
-                            snapshotTimeout,
-                            actions,
-                            timerActions,
-                            minPoolSize,
-                            maxPoolSize);
+        final Map<String, Entity.EntityMethod> actions = buildActions(entity, Action.class);
+        final Map<String, Entity.EntityMethod> timerActions = buildActions(entity, TimerAction.class);
 
-                    log.info("Registering Actor: {}", actorName);
-                    log.debug("Registering Entity -> {}", entityType);
-                    return entityType;
-                }).collect(Collectors.toList());
+        Entity entityType = new Entity(
+                actorName,
+                entity,
+                getKind(kind),
+                stateType,
+                actorBeanName,
+                isStateful,
+                deactivateTimeout,
+                snapshotTimeout,
+                actions,
+                timerActions,
+                minPoolSize,
+                maxPoolSize);
+
+        log.info("Registering NamedActor: {}", actorName);
+        log.debug("Registering Entity -> {}", entityType);
+        return entityType;
+    }
+
+    private Entity fromAnnotationToEntity(Class<?> entity, UnNamedActor actor) {
+
+        String actorBeanName = entity.getSimpleName();
+        String actorName = getActorName((Actor) actor, actorBeanName);
+        ActorKind kind = actor.kind();
+        long deactivateTimeout = actor.deactivatedTimeout();
+        long snapshotTimeout = actor.snapshotTimeout();
+        boolean isStateful = actor.stateful();
+        Class stateType = actor.stateType();
+        int minPoolSize = actor.minPoolSize();
+        int maxPoolSize = actor.maxPoolSize();
+
+        final Map<String, Entity.EntityMethod> actions = buildActions(entity, Action.class);
+        final Map<String, Entity.EntityMethod> timerActions = buildActions(entity, TimerAction.class);
+
+        Entity entityType = new Entity(
+                actorName,
+                entity,
+                getKind(kind),
+                stateType,
+                actorBeanName,
+                isStateful,
+                deactivateTimeout,
+                snapshotTimeout,
+                actions,
+                timerActions,
+                minPoolSize,
+                maxPoolSize);
+
+        log.info("Registering NamedActor: {}", actorName);
+        log.debug("Registering Entity -> {}", entityType);
+        return entityType;
+    }
+
+    private Entity fromAnnotationToEntity(Class<?> entity, PooledActor actor) {
+
+        String actorBeanName = entity.getSimpleName();
+        String actorName = getActorName((Actor) actor, actorBeanName);
+        ActorKind kind = actor.kind();
+        long deactivateTimeout = actor.deactivatedTimeout();
+        long snapshotTimeout = actor.snapshotTimeout();
+        boolean isStateful = actor.stateful();
+        Class stateType = actor.stateType();
+        int minPoolSize = actor.minPoolSize();
+        int maxPoolSize = actor.maxPoolSize();
+
+        final Map<String, Entity.EntityMethod> actions = buildActions(entity, Action.class);
+        final Map<String, Entity.EntityMethod> timerActions = buildActions(entity, TimerAction.class);
+
+        Entity entityType = new Entity(
+                actorName,
+                entity,
+                getKind(kind),
+                stateType,
+                actorBeanName,
+                isStateful,
+                deactivateTimeout,
+                snapshotTimeout,
+                actions,
+                timerActions,
+                minPoolSize,
+                maxPoolSize);
+
+        log.info("Registering NamedActor: {}", actorName);
+        log.debug("Registering Entity -> {}", entityType);
+        return entityType;
     }
 
     private Map<String, Entity.EntityMethod> buildActions(Class<?> entity, Class<? extends Annotation> annotationType) {

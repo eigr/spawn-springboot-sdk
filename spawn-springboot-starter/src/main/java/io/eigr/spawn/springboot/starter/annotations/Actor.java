@@ -2,6 +2,7 @@ package io.eigr.spawn.springboot.starter.annotations;
 
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.annotation.AliasFor;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.ElementType;
@@ -14,6 +15,9 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public @interface Actor {
+    String value() default "";
+    @AliasFor("value")
+    String name() default "";
     long deactivatedTimeout() default 60000;
     long snapshotTimeout() default 50000;
     String channel() default "";

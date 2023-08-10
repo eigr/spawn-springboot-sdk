@@ -18,9 +18,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public @interface NamedActor {
-    String value() default "";
-    @AliasFor("value")
-    String name() default "";
+
     ActorKind kind() default ActorKind.NAMED;
     boolean stateful() default true;
     Class<? extends GeneratedMessageV3> stateType();
