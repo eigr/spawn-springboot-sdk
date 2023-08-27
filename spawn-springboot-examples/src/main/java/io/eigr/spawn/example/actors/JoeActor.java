@@ -9,7 +9,7 @@ import lombok.extern.log4j.Log4j2;
 import java.util.Optional;
 
 @Log4j2
-@NamedActor(name = "joe", stateType = JoeState.class, snapshotTimeout = 5000, deactivatedTimeout = 10000)
+@NamedActor(name = "joe", stateType = JoeState.class, snapshotTimeout = 5000, deactivatedTimeout = 60000)
 public class JoeActor {
 
     @Action
